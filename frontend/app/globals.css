@@ -1,0 +1,98 @@
+/* Google Fonts loaded via Next.js font optimization in layout.tsx instead */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-blue: #0645A8;
+  --secondary-blue: #1671E8;
+  --bg-color: #F7F9FC;
+  --card-bg: #FFFFFF;
+  --text-primary: #172033;
+  --text-secondary: #64748B;
+  --border-color: #E2E8F0;
+  color-scheme: light;
+}
+
+.dark {
+  --primary-blue: #60A5FA;
+  --secondary-blue: #3B82F6;
+  --bg-color: #0B1220;
+  --card-bg: #172438;
+  --text-primary: #F8FAFC;
+  --text-secondary: #AAB8CC;
+  --border-color: #2B3A50;
+  color-scheme: dark;
+}
+
+body {
+  font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #111C2E;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #2B3A50;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3B4D68;
+}
+
+/* Mobile container styling */
+.mobile-frame {
+  max-width: 440px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--card-bg);
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  body {
+    background: #EDF2F7;
+  }
+}
+
+.dark body {
+  background: #0B1220;
+}
+
+@media (min-width: 768px) {
+  .dark body {
+    background: #070D18;
+  }
+}
+
