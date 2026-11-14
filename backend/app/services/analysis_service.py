@@ -3,13 +3,16 @@ Real-time AI Government Scheme Research and Analysis Service for Sarkari Saathi.
 Executes an honest 6-stage research pipeline connecting citizen input with official government sources
 and deterministic eligibility evaluation, streaming live SSE progress events.
 """
-import asyncio
+import anyio
 import json
 import uuid
 import time
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict, List, Optional
 from app.services.gemini_service import gemini_service
+from app.services.input_validator import input_validator, InputCategory
+from app.services.profile_extractor import profile_extractor
+from app.services.research_logger import research_logger
 from app.database import get_current_profile, get_all_schemes, get_all_user_documents
 from app.rule_engine.evaluator import SchemeEvaluator
 from app.integrations.connector_manager import connector_manager
@@ -51,18 +54,77 @@ class SchemeAnalysisService:
         session.status = "running"
 
         # -------------------------------------------------------------
-        # STAGE 1: Understanding your situation
+        # STAGE 1: Strict User Input Validation & Understanding
         # -------------------------------------------------------------
         session.current_stage = 1
         t0 = time.time()
         extracted = {}
+
+        # 1. Input Validation Check
         if session.user_input:
-            extracted = gemini_service.extract_entities(session.user_input, session.initial_profile)
-        
+            val_res = input_validator.classify(session.user_input)
+            if not val_res["is_valid"]:
+                # Input validation failed (Gibberish, Unrelated, Greeting)
+                # STOP pipeline immediately. Do NOT search or recommend schemes!
+                st1_payload = {
+                    "analysis_id": analysis_id,
+                    "stage": 1,
+                    "stage_id": "understanding_situation",
+                    "stage_title": "इनपुट सत्यापन",
+                    "stage_title_en": "Input Validation",
+                    "progress_percent": 100,
+                    "status": "validation_failed",
+                    "elapsed_ms": int((time.time() - t0) * 1000),
+                    "activity_message": val_res["feedback_message_hi"],
+                    "details": {
+                        "validation_category": val_res["category"],
+                        "reason": val_res["reason"],
+                        "feedback_hi": val_res["feedback_message_hi"],
+                        "feedback_en": val_res["feedback_message_en"]
+                    }
+                }
+                session.stage_logs.append(st1_payload)
+                yield f"event: stage_update\ndata: {json.dumps(st1_payload, ensure_ascii=False)}\n\n"
+
+                session.status = "completed"
+                session.result = {
+                    "analysis_id": analysis_id,
+                    "status": "completed",
+                    "validation": val_res,
+                    "profile": session.initial_profile,
+                    "summary": {
+                        "total_discovered": 0,
+                        "total_evaluated": 0,
+                        "eligible_count": 0,
+                        "potentially_eligible_count": 0,
+                        "more_info_required_count": 0,
+                        "not_eligible_count": 0,
+                        "message_hi": val_res["feedback_message_hi"],
+                        "message_en": val_res["feedback_message_en"],
+                        "disclaimer": "अमान्य या असंबंधित संदेश के लिए कोई सरकारी योजना अनुशंसित नहीं की गई है।"
+                    },
+                    "source_health": [],
+                    "results": {
+                        "eligible": [],
+                        "potentially_eligible": [],
+                        "more_info_required": [],
+                        "not_eligible": []
+                    },
+                    "required_documents_summary": {
+                        "total": 0,
+                        "available": [],
+                        "missing": []
+                    }
+                }
+                yield f"event: complete\ndata: {json.dumps(session.result, ensure_ascii=False)}\n\n"
+                return
+
+            # Extract structured parameters without hallucinations
+            extraction_res = profile_extractor.extract(session.user_input, session.initial_profile)
+            extracted = extraction_res["extracted_data"]
+
         # Merge input extracted attributes onto provided profile
         working_profile = {**session.initial_profile, **extracted}
-        if not working_profile.get("state"):
-            working_profile["state"] = "उत्तर प्रदेश"
 
         st1_payload = {
             "analysis_id": analysis_id,
@@ -77,7 +139,7 @@ class SchemeAnalysisService:
                 f"उपयोगकर्ता इनपुट का विश्लेषण पूर्ण: "
                 f"{working_profile.get('age', 'अज्ञात')} वर्ष, "
                 f"{working_profile.get('occupation', 'नागरिक')}, "
-                f"{working_profile.get('state', 'उत्तर प्रदेश')}"
+                f"{working_profile.get('state', 'अज्ञात राज्य')}"
             ),
             "details": {
                 "extracted_fields": list(extracted.keys()),
@@ -91,18 +153,18 @@ class SchemeAnalysisService:
         }
         session.stage_logs.append(st1_payload)
         yield f"event: stage_update\ndata: {json.dumps(st1_payload, ensure_ascii=False)}\n\n"
-        await asyncio.sleep(0.4)
+        await anyio.sleep(0.4)
 
         # -------------------------------------------------------------
         # STAGE 2: Building your beneficiary profile
         # -------------------------------------------------------------
         session.current_stage = 2
         t1 = time.time()
-        
+
         # Identify applicable citizen categories
         categories = extracted.get("target_categories", [])
         if not categories:
-            occ = working_profile.get("occupation", "")
+            occ = working_profile.get("occupation") or ""
             if "किसान" in occ:
                 categories = ["agriculture", "social_welfare"]
             elif "छात्र" in occ or working_profile.get("is_student"):
@@ -142,18 +204,18 @@ class SchemeAnalysisService:
         }
         session.stage_logs.append(st2_payload)
         yield f"event: stage_update\ndata: {json.dumps(st2_payload, ensure_ascii=False)}\n\n"
-        await asyncio.sleep(0.4)
+        await anyio.sleep(0.4)
 
         # -------------------------------------------------------------
         # STAGE 3: Searching official government sources
         # -------------------------------------------------------------
         session.current_stage = 3
         t2 = time.time()
-        
+
         # Real connector health check & candidate search
         sources_health = connector_manager.get_all_health()
         all_schemes = get_all_schemes()
-        user_state = working_profile.get("state", "उत्तर प्रदेश")
+        user_state = working_profile.get("state")
 
         # Filter schemes by geography and applicability
         candidate_schemes = []
@@ -161,7 +223,7 @@ class SchemeAnalysisService:
             if not s.get("is_active", True):
                 continue
             states = s.get("applicable_states", ["All"])
-            if "All" in states or user_state in states:
+            if "All" in states or (user_state and user_state in states):
                 candidate_schemes.append(s)
 
         st3_payload = {
@@ -190,7 +252,7 @@ class SchemeAnalysisService:
         }
         session.stage_logs.append(st3_payload)
         yield f"event: stage_update\ndata: {json.dumps(st3_payload, ensure_ascii=False)}\n\n"
-        await asyncio.sleep(0.4)
+        await anyio.sleep(0.4)
 
         # -------------------------------------------------------------
         # STAGE 4: Analysing scheme eligibility
@@ -206,7 +268,7 @@ class SchemeAnalysisService:
 
         for s in candidate_schemes:
             eval_res = SchemeEvaluator.evaluate(working_profile, s)
-            
+
             # Enrich with presentation metadata
             eval_res["category"] = s.get("category", "social_welfare")
             eval_res["category_hindi"] = s.get("category_hindi", "सामाजिक सुरक्षा")
@@ -231,7 +293,48 @@ class SchemeAnalysisService:
             else:
                 not_eligible.append(eval_res)
 
-        # Relevance ranking
+        # Relevance ranking & Domain filtering
+        user_req = (working_profile.get("assistance_requirement") or "").lower()
+        user_occ = (working_profile.get("occupation") or "").lower()
+
+        filtered_eligible = []
+        for s_eval in eligible_schemes:
+            cat = s_eval.get("category", "")
+            # Exclude inappropriate domains
+            if ("बेरोजगार" in user_occ or "student" in user_occ or "छात्र" in user_occ) and cat == "agriculture":
+                continue
+            if "किसान" in user_occ and cat == "education" and not any(m.get("is_student") for m in working_profile.get("members", [])):
+                continue
+            if user_req == "education" and cat not in ["education", "skills", "social_welfare"]:
+                continue
+            if user_req == "employment" and cat not in ["employment", "skills", "business", "social_welfare"]:
+                continue
+            if user_req == "agriculture" and cat not in ["agriculture", "social_welfare", "health"]:
+                continue
+            filtered_eligible.append(s_eval)
+
+        eligible_schemes = filtered_eligible
+
+        filtered_potential = []
+        for s_eval in potentially_eligible:
+            cat = s_eval.get("category", "")
+            sid = s_eval.get("scheme_id", "")
+            if ("बेरोजगार" in user_occ or "student" in user_occ or "छात्र" in user_occ or "निजी" in user_occ) and cat == "agriculture":
+                continue
+            if working_profile.get("gender") in ["पुरुष", "male"] and any(w in sid for w in ["widow", "vidhwa", "mahila", "kanya", "bc_sakhi", "ladli"]):
+                continue
+            if working_profile.get("marital_status") and working_profile.get("marital_status") not in ["विधवा", "widowed"] and any(w in sid for w in ["widow", "vidhwa"]):
+                continue
+            if user_req == "education" and cat not in ["education", "skills", "social_welfare"]:
+                continue
+            if user_req == "employment" and cat not in ["employment", "skills", "business", "social_welfare"]:
+                continue
+            if user_req == "agriculture" and cat not in ["agriculture", "social_welfare", "health"]:
+                continue
+            filtered_potential.append(s_eval)
+
+        potentially_eligible = filtered_potential
+
         eligible_schemes.sort(key=lambda x: len(x.get("matched_conditions", [])), reverse=True)
         potentially_eligible.sort(key=lambda x: len(x.get("matched_conditions", [])), reverse=True)
 
@@ -259,7 +362,7 @@ class SchemeAnalysisService:
         }
         session.stage_logs.append(st4_payload)
         yield f"event: stage_update\ndata: {json.dumps(st4_payload, ensure_ascii=False)}\n\n"
-        await asyncio.sleep(0.4)
+        await anyio.sleep(0.4)
 
         # -------------------------------------------------------------
         # STAGE 5: Checking documents and application requirements
@@ -298,7 +401,7 @@ class SchemeAnalysisService:
         }
         session.stage_logs.append(st5_payload)
         yield f"event: stage_update\ndata: {json.dumps(st5_payload, ensure_ascii=False)}\n\n"
-        await asyncio.sleep(0.4)
+        await anyio.sleep(0.4)
 
         # -------------------------------------------------------------
         # STAGE 6: Preparing personalised recommendations
@@ -358,7 +461,7 @@ class SchemeAnalysisService:
         }
         session.stage_logs.append(st6_payload)
         yield f"event: stage_update\ndata: {json.dumps(st6_payload, ensure_ascii=False)}\n\n"
-        await asyncio.sleep(0.2)
+        await anyio.sleep(0.2)
 
         # Final complete event carrying full final report
         complete_payload = {
@@ -370,4 +473,3 @@ class SchemeAnalysisService:
 
 
 analysis_service = SchemeAnalysisService()
-

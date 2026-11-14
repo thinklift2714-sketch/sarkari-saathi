@@ -109,15 +109,24 @@ class ConnectorManager:
                 notes.append(f"{connector.source_name}: Skipped ({health.status.value}). {health.message}")
 
         sync_entry = {
+            "id": f"sync_{int(datetime.now().timestamp() * 1000)}",
             "timestamp": sync_time,
             "source": source_id or "all_configured_sources",
             "status": "completed",
             "records_updated": records_updated,
+            "schemes_checked": len(targets),
             "details": notes,
+            "notes": "; ".join(notes),
         }
         self.sync_history.append(sync_entry)
+
+        try:
+            from app.database import add_sync_audit_log
+            add_sync_audit_log(sync_entry)
+        except Exception:
+            pass
+
         return sync_entry
 
 
 connector_manager = ConnectorManager()
-

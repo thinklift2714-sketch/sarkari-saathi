@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
 from app.services.analysis_service import analysis_service
-from app.database import get_current_profile, get_session_profile, get_user_profile
+from app.database import get_current_profile, get_session_profile, get_user_profile, create_empty_profile
 from app.auth_deps import get_optional_user, AuthenticatedUser
 
 router = APIRouter(prefix="/schemes/analyze", tags=["AI Scheme Research & Analysis"])
@@ -31,7 +31,9 @@ def start_analysis(req: StartAnalysisRequest, user: Optional[AuthenticatedUser] 
         elif req.session_id:
             profile = get_session_profile(req.session_id)
         else:
-            profile = get_current_profile()
+            # FIXED: Use empty profile instead of Seeta Devi (DB_PROFILE) for anonymous users
+            # This prevents profile contamination across sessions
+            profile = create_empty_profile()
 
     aid = analysis_service.create_session(user_input=req.user_input or "", profile=profile)
     return {
@@ -91,4 +93,3 @@ def get_analysis_result(analysis_id: str):
             "message": "Analysis is still running or pending"
         }
     return session.result
-

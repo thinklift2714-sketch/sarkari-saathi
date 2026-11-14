@@ -72,6 +72,7 @@ export async function fetchCategories() {
 
 export async function discoverSchemes(params?: {
   profile?: any;
+  session_id?: string;
   category?: string;
   search_query?: string;
   government_level?: string;
@@ -156,15 +157,112 @@ export async function submitApplication(schemeId: string, ref?: string) {
 
 export async function sendChatMessage(
   message: string,
-  history: any[],
-  currentProfile?: any
+  history: any[] = [],
+  currentProfile?: any,
+  conversationId?: string
 ) {
   const res = await fetch(`${API_BASE}/conversation/message`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify({ message, history, current_profile: currentProfile }),
+    body: JSON.stringify({
+      message,
+      history,
+      current_profile: currentProfile,
+      conversation_id: conversationId,
+    }),
   });
   if (!res.ok) throw new Error("Conversation failed");
+  return res.json();
+}
+
+// =====================================================================
+// SAVED SCHEMES APIS (User-Isolated)
+// =====================================================================
+
+export async function fetchSavedSchemes() {
+  const res = await fetch(`${API_BASE}/schemes/saved`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function fetchSavedSchemeIds(): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/schemes/saved/ids`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function saveScheme(schemeId: string) {
+  const res = await fetch(`${API_BASE}/schemes/saved/${schemeId}`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to save scheme");
+  return res.json();
+}
+
+export async function removeSavedScheme(schemeId: string) {
+  const res = await fetch(`${API_BASE}/schemes/saved/${schemeId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to remove saved scheme");
+  return res.json();
+}
+
+// =====================================================================
+// CONVERSATIONS & CHAT HISTORY APIS (Persistent)
+// =====================================================================
+
+export async function fetchConversations() {
+  const res = await fetch(`${API_BASE}/conversation`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function createConversation(title?: string) {
+  const res = await fetch(`${API_BASE}/conversation`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) throw new Error("Failed to create conversation");
+  return res.json();
+}
+
+export async function fetchConversation(conversationId: string) {
+  const res = await fetch(`${API_BASE}/conversation/${conversationId}`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch conversation");
+  return res.json();
+}
+
+export async function deleteConversation(conversationId: string) {
+  const res = await fetch(`${API_BASE}/conversation/${conversationId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to delete conversation");
+  return res.json();
+}
+
+export async function renameConversation(conversationId: string, title: string) {
+  const res = await fetch(`${API_BASE}/conversation/${conversationId}`, {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ title }),
+  });
+  if (!res.ok) throw new Error("Failed to rename conversation");
   return res.json();
 }
 
@@ -232,5 +330,112 @@ export async function fetchAnalysisResult(analysisId: string) {
     cache: "no-store",
   });
   if (!res.ok) throw new Error("Failed to fetch analysis result");
+  return res.json();
+}
+
+// =====================================================================
+// APPLICATION GUIDE & ADMIN GOVERNANCE APIs
+// =====================================================================
+
+export async function fetchApplicationGuide(schemeId: string) {
+  const res = await fetch(`${API_BASE}/applications/guide/${encodeURIComponent(schemeId)}`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load application guide");
+  return res.json();
+}
+
+export async function fetchAdminSchemes(params?: {
+  category?: string;
+  status?: string;
+  search?: string;
+}) {
+  const q = new URLSearchParams();
+  if (params?.category && params.category !== "all") q.set("category", params.category);
+  if (params?.status && params.status !== "all") q.set("status", params.status);
+  if (params?.search) q.set("search", params.search);
+
+  const url = `${API_BASE}/admin/schemes${q.toString() ? `?${q.toString()}` : ""}`;
+  const res = await fetch(url, { headers: getAuthHeaders(), cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load admin schemes");
+  return res.json();
+}
+
+export async function fetchAdminScheme(schemeId: string) {
+  const res = await fetch(`${API_BASE}/admin/schemes/${encodeURIComponent(schemeId)}`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch scheme");
+  return res.json();
+}
+
+export async function createAdminScheme(schemeData: any) {
+  const res = await fetch(`${API_BASE}/admin/schemes`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(schemeData),
+  });
+  if (!res.ok) throw new Error("Failed to create scheme");
+  return res.json();
+}
+
+export async function updateAdminScheme(schemeId: string, updates: any) {
+  const res = await fetch(`${API_BASE}/admin/schemes/${encodeURIComponent(schemeId)}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) throw new Error("Failed to update scheme");
+  return res.json();
+}
+
+export async function deleteAdminScheme(schemeId: string) {
+  const res = await fetch(`${API_BASE}/admin/schemes/${encodeURIComponent(schemeId)}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to delete scheme");
+  return res.json();
+}
+
+export async function verifyAdminScheme(schemeId: string, verifierName: string = "Admin", notes?: string) {
+  const res = await fetch(`${API_BASE}/admin/schemes/${encodeURIComponent(schemeId)}/verify`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ verifier_name: verifierName, notes }),
+  });
+  if (!res.ok) throw new Error("Failed to verify scheme");
+  return res.json();
+}
+
+export async function fetchAdminSyncStatus() {
+  const res = await fetch(`${API_BASE}/admin/sync/status`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load sync status");
+  return res.json();
+}
+
+export async function triggerAdminSync(sourceId?: string) {
+  const url = sourceId
+    ? `${API_BASE}/admin/sync/trigger?source_id=${encodeURIComponent(sourceId)}`
+    : `${API_BASE}/admin/sync/trigger`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to trigger sync");
+  return res.json();
+}
+
+export async function fetchAdminSyncLogs() {
+  const res = await fetch(`${API_BASE}/admin/sync/logs`, {
+    headers: getAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load sync logs");
   return res.json();
 }

@@ -48,10 +48,18 @@ export function ScreenHome({ onNavigate, language, setLanguage }: ScreenHomeProp
             <button
               onClick={() => onNavigate("profile")}
               title={displayName || "Profile"}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-[#172438] border border-blue-200 dark:border-[#2B3A50] text-[#0645A8] dark:text-[#60A5FA] text-xs font-bold transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 dark:bg-[#172438] border border-blue-200 dark:border-[#2B3A50] text-[#0645A8] dark:text-[#60A5FA] text-xs font-bold transition-all active:scale-95 shadow-2xs"
             >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span className="max-w-[70px] truncate">{displayName || "प्रोफ़ाइल"}</span>
+              {profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture ? (
+                <img
+                  src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture}
+                  alt="Avatar"
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ) : (
+                <UserCheck className="w-3.5 h-3.5" />
+              )}
+              <span className="max-w-[80px] truncate">{displayName || "प्रोफ़ाइल"}</span>
             </button>
           ) : (
             <button
@@ -242,9 +250,9 @@ export function ScreenHome({ onNavigate, language, setLanguage }: ScreenHomeProp
               </span>
             </button>
 
-            {/* Option 3: आवेदन की जानकारी */}
+            {/* Option 3: आवेदन की जानकारी (Step-by-step Application Guide) */}
             <button
-              onClick={() => onNavigate("applications")}
+              onClick={() => onNavigate("app_guide")}
               className="flex flex-col items-start p-3.5 rounded-2xl bg-[#EFF6FF] dark:bg-[#12213A] border border-[#BFDBFE] dark:border-[#1C3E6B] hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-cardHover transition-all text-left group"
             >
               <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-[#0645A8] dark:text-[#60A5FA] flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">

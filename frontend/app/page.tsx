@@ -8,12 +8,14 @@ import { ScreenSchemes } from "@/components/screens/ScreenSchemes";
 import { ScreenSchemeDetails } from "@/components/screens/ScreenSchemeDetails";
 import { ScreenDocuments } from "@/components/screens/ScreenDocuments";
 import { ScreenApplicationProcess } from "@/components/screens/ScreenApplicationProcess";
+import { ScreenAppGuide } from "@/components/screens/ScreenAppGuide";
 import { ScreenFamily } from "@/components/screens/ScreenFamily";
 import { ScreenDashboard } from "@/components/screens/ScreenDashboard";
 import { ScreenApplications } from "@/components/screens/ScreenApplications";
 import { ScreenAnalysis } from "@/components/screens/ScreenAnalysis";
 import { ScreenAuth } from "@/components/screens/ScreenAuth";
 import { ScreenOnboarding } from "@/components/screens/ScreenOnboarding";
+import { ScreenAdmin } from "@/components/screens/ScreenAdmin";
 import { BottomNav } from "@/components/navigation/BottomNav";
 import { AshokaEmblem } from "@/components/common/Avatars";
 import {
@@ -29,7 +31,8 @@ import {
   UserCheck,
   ShieldCheck,
   UserPlus,
-  Lock
+  Lock,
+  Database
 } from "lucide-react";
 import { translations, Language } from "@/lib/translations";
 import { ThemeToggle } from "@/lib/theme";
@@ -82,6 +85,7 @@ export default function App() {
     { id: "process", label: "7. Process", name: "Process" },
     { id: "family", label: "8. Family", name: "Family" },
     { id: "dashboard", label: "9. Dashboard", name: "Dashboard" },
+    { id: "admin", label: "⚙️ Data Sync", name: "Admin" },
   ] : [
     { id: "home", label: "१. होम स्क्रीन", name: "Home" },
     { id: "assistant", label: "२. AI सहायक", name: "Voice AI" },
@@ -93,9 +97,29 @@ export default function App() {
     { id: "process", label: "७. आवेदन प्रक्रिया", name: "Process" },
     { id: "family", label: "८. मेरा परिवार", name: "Family" },
     { id: "dashboard", label: "९. मेरा डैशबोर्ड", name: "Dashboard" },
+    { id: "admin", label: "⚙️ डेटा सिंक/Admin", name: "Admin" },
   ];
 
+  // Redirect un-onboarded authenticated users directly to Profile Setup
+  React.useEffect(() => {
+    if (user && profile && profile.is_onboarded === false && activeScreen !== "auth" && activeScreen !== "onboarding") {
+      setActiveScreen("onboarding");
+    }
+  }, [user, profile, activeScreen]);
+
   const renderActiveScreen = () => {
+    if (showOnboardingModal || activeScreen === "onboarding") {
+      return (
+        <ScreenOnboarding
+          language={language}
+          onComplete={() => {
+            setShowOnboardingModal(false);
+            navigateTo("dashboard");
+          }}
+        />
+      );
+    }
+
     if (showAuthModal || activeScreen === "auth") {
       return (
         <ScreenAuth
@@ -108,18 +132,6 @@ export default function App() {
           onClose={() => {
             setShowAuthModal(false);
             if (activeScreen === "auth") setActiveScreen("home");
-          }}
-        />
-      );
-    }
-
-    if (showOnboardingModal) {
-      return (
-        <ScreenOnboarding
-          language={language}
-          onComplete={() => {
-            setShowOnboardingModal(false);
-            setActiveScreen("dashboard");
           }}
         />
       );
@@ -148,6 +160,11 @@ export default function App() {
         return <ScreenDashboard onNavigate={navigateTo} language={language} setLanguage={setLanguage} />;
       case "applications":
         return <ScreenApplications schemeId={selectedSchemeId} onNavigate={navigateTo} />;
+      case "app_guide":
+      case "application_guide":
+        return <ScreenAppGuide onNavigate={navigateTo} language={language} />;
+      case "admin":
+        return <ScreenAdmin onNavigate={navigateTo} language={language} />;
       case "auth":
         return (
           <ScreenAuth
@@ -164,7 +181,6 @@ export default function App() {
 
   const showBottomNav =
     !showAuthModal &&
-    !showOnboardingModal &&
     ["home", "schemes", "assistant", "documents", "dashboard", "profile"].includes(activeScreen);
 
   return (
@@ -195,11 +211,10 @@ export default function App() {
               key={tab.id}
               onClick={() => {
                 setShowAuthModal(false);
-                setShowOnboardingModal(false);
                 navigateTo(tab.id);
               }}
               className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap active:scale-95 ${
-                activeScreen === tab.id && !showAuthModal && !showOnboardingModal
+                activeScreen === tab.id && !showAuthModal
                   ? "bg-[#0645A8] text-white shadow-xs"
                   : "bg-slate-100 dark:bg-[#172438] text-slate-700 dark:text-[#AAB8CC] hover:bg-slate-200 dark:hover:bg-[#1D2D43]"
               }`}
@@ -217,10 +232,18 @@ export default function App() {
                 setShowAuthModal(false);
                 navigateTo("profile");
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-xs font-bold text-emerald-800 dark:text-emerald-300 transition-all hover:bg-emerald-100"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-xs font-bold text-emerald-800 dark:text-emerald-300 transition-all hover:bg-emerald-100 shadow-2xs"
             >
-              <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>{profile?.name || (user.email ? user.email.split("@")[0] : "सत्यापित नागरिक")}</span>
+              {profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture ? (
+                <img
+                  src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture}
+                  alt="Profile"
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ) : (
+                <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              )}
+              <span className="max-w-[120px] truncate">{profile?.name || (user.email ? user.email.split("@")[0] : "सत्यापित नागरिक")}</span>
             </button>
           ) : (
             <button
@@ -231,6 +254,16 @@ export default function App() {
               <span>{language === "en" ? "Sign In / Register" : "लॉगिन / साइन अप"}</span>
             </button>
           )}
+
+          {/* Admin / Data Governance Button */}
+          <button
+            onClick={() => navigateTo("admin")}
+            title="सरकारी डेटा सिंक एवं योजना प्रशासन"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-[#172438] border border-slate-200 dark:border-[#2B3A50] hover:bg-slate-200 dark:hover:bg-[#1D2D43] rounded-full text-xs font-bold text-slate-700 dark:text-slate-300 transition-all shadow-2xs"
+          >
+            <Database className="w-3.5 h-3.5 text-[#0645A8] dark:text-[#60A5FA]" />
+            <span className="hidden sm:inline">{language === "en" ? "Data Sync / Admin" : "डेटा सिंक / Admin"}</span>
+          </button>
 
           {/* Theme Switcher Toggle */}
           <ThemeToggle language={language} />
@@ -270,41 +303,53 @@ export default function App() {
 
             {/* Quick Feature Highlights List */}
             <div className="space-y-2.5">
-              <div className="flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm transition-colors">
+              <button
+                onClick={() => navigateTo("assistant")}
+                className="w-full flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all text-left cursor-pointer"
+              >
                 <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-[#0645A8] dark:text-[#60A5FA] flex items-center justify-center flex-shrink-0">
                   <Mic className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-800 dark:text-[#F8FAFC]">
                   आवाज़ में पूछें (हिंदी में)
                 </span>
-              </div>
+              </button>
 
-              <div className="flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm transition-colors">
+              <button
+                onClick={() => navigateTo("schemes")}
+                className="w-full flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md transition-all text-left cursor-pointer"
+              >
                 <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-[#16A34A] dark:text-[#34D399] flex items-center justify-center flex-shrink-0">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-800 dark:text-[#F8FAFC]">
                   पात्रता के अनुसार योजनाएं पाएं
                 </span>
-              </div>
+              </button>
 
-              <div className="flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm transition-colors">
+              <button
+                onClick={() => navigateTo("documents")}
+                className="w-full flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md transition-all text-left cursor-pointer"
+              >
                 <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-[#F59E0B] flex items-center justify-center flex-shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-800 dark:text-[#F8FAFC]">
                   दस्तावेज़ चेकलिस्ट पाएं
                 </span>
-              </div>
+              </button>
 
-              <div className="flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm transition-colors">
+              <button
+                onClick={() => navigateTo("app_guide")}
+                className="w-full flex items-center gap-3 bg-white dark:bg-[#172438] p-3 rounded-2xl border border-slate-200 dark:border-[#2B3A50] shadow-sm hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-md transition-all text-left cursor-pointer"
+              >
                 <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-800 dark:text-[#F8FAFC]">
                   आवेदन की पूरी जानकारी पाएं
                 </span>
-              </div>
+              </button>
             </div>
           </div>
 

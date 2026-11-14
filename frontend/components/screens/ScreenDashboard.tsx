@@ -15,7 +15,8 @@ import {
   UserPlus,
   Sparkles,
   AlertCircle,
-  FolderOpen
+  FolderOpen,
+  Database
 } from "lucide-react";
 import { translations, Language } from "@/lib/translations";
 import { ThemeToggle, ThemeSelectorPill } from "@/lib/theme";
@@ -138,7 +139,7 @@ export function ScreenDashboard({
             </div>
 
             <button
-              onClick={() => setShowOnboardingModal(true)}
+              onClick={() => onNavigate("profile")}
               className="w-full py-3 bg-[#0645A8] hover:bg-[#1671E8] text-white text-xs font-bold rounded-xl shadow-md transition-colors flex items-center justify-center gap-2"
             >
               <UserPlus className="w-4 h-4" />
@@ -151,9 +152,17 @@ export function ScreenDashboard({
         {isProfileReady && (
           <div className="bg-white dark:bg-[#172438] rounded-2xl p-4 border border-slate-200/90 dark:border-[#2B3A50] shadow-card flex items-center justify-between gap-3 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-[#0645A8] dark:text-[#60A5FA] flex items-center justify-center font-black text-lg border border-blue-200 dark:border-blue-800/60">
-                {liveProfile.name.charAt(0)}
-              </div>
+              {liveProfile.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture ? (
+                <img
+                  src={liveProfile.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture}
+                  alt={liveProfile.name}
+                  className="w-12 h-12 rounded-2xl object-cover border border-blue-200 dark:border-blue-800/60 shadow-xs"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-[#0645A8] dark:text-[#60A5FA] flex items-center justify-center font-black text-lg border border-blue-200 dark:border-blue-800/60">
+                  {liveProfile.name.charAt(0)}
+                </div>
+              )}
               <div>
                 <h2 className="text-base font-extrabold text-[#172033] dark:text-[#F8FAFC] leading-tight">
                   {liveProfile.name}
@@ -270,6 +279,27 @@ export function ScreenDashboard({
             </span>
           </button>
         </div>
+
+        {/* Action 5: सरकारी डेटा सिंक एवं एडमिन पोर्टल */}
+        <button
+          onClick={() => onNavigate("admin")}
+          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/30 border border-blue-200/90 dark:border-blue-900/60 shadow-xs hover:border-blue-300 transition-all text-left"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/60 text-[#0645A8] dark:text-[#60A5FA] flex items-center justify-center flex-shrink-0">
+              <Database className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                {language === "en" ? "Government Data Sync & Admin" : "सरकारी डेटा सिंक एवं योजना प्रशासन"}
+              </h4>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                myScheme, API Setu, OGD Data.gov.in एवं नई योजनाएं जोड़ें
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-[#0645A8] dark:text-[#60A5FA]" />
+        </button>
 
         {/* Security & Helpline Badge */}
         <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl p-3.5 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-3 transition-colors">

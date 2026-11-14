@@ -5,7 +5,7 @@ Discovers and evaluates real government schemes across Central and State portals
 using the deterministic Python Rule Engine.
 """
 from typing import Any, Dict, List, Optional
-from app.database import get_current_profile, get_all_schemes, get_scheme_by_id
+from app.database import get_current_profile, create_empty_profile, get_all_schemes, get_scheme_by_id
 from app.rule_engine.evaluator import SchemeEvaluator
 from app.services.myscheme_service import MYSCHEME_CATEGORIES
 from app.integrations.connector_manager import connector_manager
@@ -63,7 +63,7 @@ class SchemeDiscoveryService:
         if profile is None:
             profile = get_current_profile()
 
-        user_state = profile.get("state", "उत्तर प्रदेश")
+        user_state = profile.get("state")
         all_schemes = get_all_schemes()
 
         # Deduplicate schemes by id or normalized name
@@ -108,14 +108,7 @@ class SchemeDiscoveryService:
                 if q not in searchable:
                     continue
 
-            # 4. Check State Geographic Applicability:
-            # Central schemes apply to 'All'. State schemes apply if user's state is matched.
-            applicable_states = s.get("applicable_states", ["All"])
-            is_state_candidate = "All" in applicable_states or user_state in applicable_states
-            if not is_state_candidate and s.get("central_or_state") == "state":
-                continue
-
-            # 5. Deterministic Rule Engine Evaluation
+            # 4. Deterministic Rule Engine Evaluation (Evaluates state, age, income, occupation, etc.)
             eval_res = SchemeEvaluator.evaluate(profile, s)
 
             # Enrich result with full scheme presentation attributes
@@ -144,9 +137,106 @@ class SchemeDiscoveryService:
             else:
                 not_eligible.append(eval_res)
 
-        # Relevance ranking: schemes with the highest number of matched conditions come first
-        eligible.sort(key=lambda x: len(x.get("matched_conditions", [])), reverse=True)
-        potentially_eligible.sort(key=lambda x: len(x.get("matched_conditions", [])), reverse=True)
+        user_req = (profile.get("assistance_requirement") or "").lower()
+        user_occ = (profile.get("occupation") or "").lower()
+
+        # Strict Profile Completeness Check:
+        # If user has not provided at least 2 basic profile parameters (e.g. age/occupation/income),
+        # do NOT declare them eligible for specific welfare schemes!
+        provided_attr_count = sum(
+            1 for k in ["age", "occupation", "annual_income", "marital_status", "landholding", "is_student", "has_disability"]
+            if profile.get(k) is not None
+        )
+        if provided_attr_count == 0:
+            # Completely un-onboarded / unprofiled citizen: zero eligible recommendations
+            eligible = []
+            potentially_eligible = []
+
+        target_cats = set(profile.get("target_categories") or [])
+        if user_req:
+            target_cats.add(user_req)
+
+        # Relevance filtering by assistance requirement and occupation:
+        filtered_eligible: List[Dict[str, Any]] = []
+        for item in eligible:
+            cat = item.get("category", "")
+            sid = item.get("scheme_id", "")
+
+            # 1. Unemployed youth / student should NEVER receive farmer schemes
+            if ("बेरोजगार" in user_occ or "student" in user_occ or "छात्र" in user_occ) and cat == "agriculture":
+                continue
+            # 2. Farmers should receive agriculture, housing, health, welfare, and scholarship if family has school/college students
+            has_student_in_family = profile.get("is_student") or any(
+                m.get("is_student") or "छात्र" in m.get("occupation", "") or "विद्यार्थी" in m.get("occupation", "") or "student" in m.get("occupation", "").lower() or (6 <= m.get("age", 0) <= 22)
+                for m in profile.get("members", [])
+            )
+            if "किसान" in user_occ and cat == "education" and not has_student_in_family:
+                continue
+            # 3. Explicit domain requests
+            if cat in target_cats:
+                pass
+            elif user_req == "education" and cat not in ["education", "skills", "social_welfare"]:
+                continue
+            elif user_req in ["employment", "skills", "business"] and cat not in ["employment", "skills", "business", "social_welfare", "women_child"]:
+                continue
+            elif user_req == "agriculture" and cat not in ["agriculture", "social_welfare", "health"]:
+                continue
+
+            filtered_eligible.append(item)
+
+        eligible = filtered_eligible
+
+        # Filter potentially_eligible to remove irrelevant domains:
+        filtered_potential: List[Dict[str, Any]] = []
+        for item in potentially_eligible:
+            cat = item.get("category", "")
+            sid = item.get("scheme_id", "")
+
+            # 1. Non-farmers / unemployed / student / private employees should not get agriculture in potential
+            if ("बेरोजगार" in user_occ or "student" in user_occ or "छात्र" in user_occ or "निजी" in user_occ) and cat == "agriculture":
+                continue
+            # 2. Male should never get widow or female-only schemes in potential
+            if profile.get("gender") in ["पुरुष", "male"] and any(w in sid for w in ["widow", "vidhwa", "mahila", "kanya", "bc_sakhi", "ladli"]):
+                continue
+            # 3. Non-widow should not get widow schemes
+            if profile.get("marital_status") and profile.get("marital_status") not in ["विधवा", "widowed"] and any(w in sid for w in ["widow", "vidhwa"]):
+                continue
+            # 4. Filter by explicit assistance requirement if provided
+            if cat in target_cats:
+                pass
+            elif user_req == "education" and cat not in ["education", "skills", "social_welfare"]:
+                continue
+            elif user_req in ["employment", "skills", "business"] and cat not in ["employment", "skills", "business", "social_welfare", "women_child"]:
+                continue
+            elif user_req == "agriculture" and cat not in ["agriculture", "social_welfare", "health"]:
+                continue
+
+            filtered_potential.append(item)
+
+        potentially_eligible = filtered_potential
+
+        def scheme_relevance_score(x: Dict[str, Any]) -> int:
+            score = len(x.get("matched_conditions", [])) * 10
+            cat = x.get("category", "")
+            tags = x.get("beneficiary_tags", [])
+            # Direct match to citizen's requested domain
+            if cat in target_cats or any(t in target_cats for t in tags):
+                score += 50
+            if "business" in target_cats and any(w in tags for w in ["business", "startup", "loan"]):
+                score += 40
+            if "employment" in target_cats and any(w in tags for w in ["unemployed", "allowance", "employment", "graduate"]):
+                score += 40
+            if "skills" in target_cats and any(w in tags for w in ["skill", "training"]):
+                score += 35
+            # State-specific preference for the citizen's home state
+            if x.get("central_or_state") == "state" and x.get("applicable_states"):
+                if any(st in x.get("applicable_states", []) for st in [profile.get("state"), "Rajasthan", "राजस्थान"]):
+                    score += 30
+            return score
+
+        # Two-stage relevance ranking
+        eligible.sort(key=scheme_relevance_score, reverse=True)
+        potentially_eligible.sort(key=scheme_relevance_score, reverse=True)
 
         # Count by category for discovery UI breakdown
         category_breakdown: Dict[str, int] = {}

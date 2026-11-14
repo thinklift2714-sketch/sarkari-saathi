@@ -54,12 +54,16 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     full_name VARCHAR(255),
     email VARCHAR(255),
     phone_number VARCHAR(20),
+    avatar_url TEXT,
     preferred_language VARCHAR(10) DEFAULT 'hi',
     theme_preference VARCHAR(20) DEFAULT 'light',
     is_onboarded BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure avatar_url exists if table was already created
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -111,6 +115,22 @@ CREATE TABLE IF NOT EXISTS public.family_profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT uq_family_profiles_user UNIQUE (user_id)
 );
+
+-- Ensure extended onboarding columns exist
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS pincode VARCHAR(10);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS monthly_income NUMERIC(12, 2);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS employment_status VARCHAR(50);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS owns_agricultural_land BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS is_bpl BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS education_level VARCHAR(100);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS education_status VARCHAR(100);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS course_or_degree VARCHAR(100);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS institution_type VARCHAR(100);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS academic_marks NUMERIC(5, 2);
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS has_aadhaar BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS has_income_certificate BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS has_domicile_certificate BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.family_profiles ADD COLUMN IF NOT EXISTS has_ration_card BOOLEAN DEFAULT FALSE;
 
 ALTER TABLE public.family_profiles ENABLE ROW LEVEL SECURITY;
 
@@ -248,15 +268,18 @@ CREATE POLICY "Users can delete their own scheme results"
 
 
 -- ====================================================================
--- 8. CONVERSATIONS TABLE (AI Voice/Text Chat History)
+-- 8. CONVERSATIONS & MESSAGES TABLES (Permanent AI Chat History)
 -- ====================================================================
 CREATE TABLE IF NOT EXISTS public.conversations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    conversation_data JSONB NOT NULL DEFAULT '[]'::JSONB,
+    title VARCHAR(255) NOT NULL DEFAULT 'नया संवाद',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure title column exists if table was created previously
+ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL DEFAULT 'नया संवाद';
 
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 
@@ -280,6 +303,69 @@ DROP POLICY IF EXISTS "Users can delete their own conversations" ON public.conve
 CREATE POLICY "Users can delete their own conversations"
     ON public.conversations FOR DELETE
     USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_user_updated ON public.conversations (user_id, updated_at DESC);
+
+
+CREATE TABLE IF NOT EXISTS public.messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    role VARCHAR(20) NOT NULL, -- 'user' | 'assistant'
+    content TEXT NOT NULL,
+    metadata JSONB DEFAULT '{}'::JSONB,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view their own messages" ON public.messages;
+CREATE POLICY "Users can view their own messages"
+    ON public.messages FOR SELECT
+    USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own messages" ON public.messages;
+CREATE POLICY "Users can insert their own messages"
+    ON public.messages FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their own messages" ON public.messages;
+CREATE POLICY "Users can delete their own messages"
+    ON public.messages FOR DELETE
+    USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_messages_conv_created ON public.messages (conversation_id, created_at ASC);
+
+
+-- ====================================================================
+-- 8B. USER SAVED SCHEMES TABLE (User-Specific Bookmarked Schemes)
+-- ====================================================================
+CREATE TABLE IF NOT EXISTS public.user_saved_schemes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    scheme_id VARCHAR(100) NOT NULL REFERENCES public.schemes(id) ON DELETE CASCADE,
+    saved_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_user_saved_scheme UNIQUE (user_id, scheme_id)
+);
+
+ALTER TABLE public.user_saved_schemes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view their own saved schemes" ON public.user_saved_schemes;
+CREATE POLICY "Users can view their own saved schemes"
+    ON public.user_saved_schemes FOR SELECT
+    USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can insert their own saved schemes" ON public.user_saved_schemes;
+CREATE POLICY "Users can insert their own saved schemes"
+    ON public.user_saved_schemes FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete their own saved schemes" ON public.user_saved_schemes;
+CREATE POLICY "Users can delete their own saved schemes"
+    ON public.user_saved_schemes FOR DELETE
+    USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_saved_schemes_user ON public.user_saved_schemes (user_id, saved_at DESC);
 
 
 -- ====================================================================
@@ -332,6 +418,7 @@ BEGIN
         full_name,
         email,
         phone_number,
+        avatar_url,
         preferred_language,
         theme_preference,
         is_onboarded
@@ -341,11 +428,16 @@ BEGIN
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', ''),
         NEW.email,
         NEW.phone,
+        COALESCE(NEW.raw_user_meta_data->>'avatar_url', NEW.raw_user_meta_data->>'picture', ''),
         'hi',
         'light',
         FALSE
     )
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT (id) DO UPDATE SET
+        full_name = EXCLUDED.full_name,
+        email = COALESCE(EXCLUDED.email, public.profiles.email),
+        avatar_url = COALESCE(EXCLUDED.avatar_url, public.profiles.avatar_url),
+        updated_at = NOW();
 
     RETURN NEW;
 END;
@@ -403,4 +495,3 @@ CREATE INDEX IF NOT EXISTS idx_user_scheme_results_user ON public.user_scheme_re
 CREATE INDEX IF NOT EXISTS idx_applications_user ON public.applications(user_id);
 CREATE INDEX IF NOT EXISTS idx_conversations_user ON public.conversations(user_id);
 CREATE INDEX IF NOT EXISTS idx_schemes_active ON public.schemes(is_active);
-

@@ -11,7 +11,8 @@ from app.routers import (
     documents,
     applications,
     integrations,
-    analysis
+    analysis,
+    admin
 )
 
 app = FastAPI(
@@ -42,6 +43,7 @@ app.include_router(documents.router, prefix=settings.API_PREFIX)
 app.include_router(applications.router, prefix=settings.API_PREFIX)
 app.include_router(integrations.router, prefix=settings.API_PREFIX)
 app.include_router(analysis.router, prefix=settings.API_PREFIX)
+app.include_router(admin.router, prefix=settings.API_PREFIX)
 
 
 @app.get("/")
@@ -67,4 +69,3 @@ def health_check():
         "rule_engine": "Python Deterministic Engine Active",
         "schemes_loaded": len(DB_SCHEMES)
     }
-

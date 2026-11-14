@@ -8,17 +8,36 @@ export interface UserProfile {
   id: string;
   user_id: string;
   name: string;
+  email?: string | null;
+  avatar_url?: string | null;
   age?: number | null;
   gender?: string | null;
   marital_status?: string | null;
   state?: string;
   district?: string | null;
   village_or_town?: string | null;
+  pincode?: string | null;
   occupation?: string | null;
+  employment_status?: string | null;
   annual_income?: number | null;
+  monthly_income?: number | null;
   family_size?: number;
-  has_bank_account?: boolean;
+  owns_agricultural_land?: boolean;
   landholding?: number | null;
+  is_bpl?: boolean;
+  caste_category?: string | null;
+  has_disability?: boolean;
+  disability_percentage?: number | null;
+  education_level?: string | null;
+  education_status?: string | null;
+  course_or_degree?: string | null;
+  institution_type?: string | null;
+  academic_marks?: number | null;
+  has_aadhaar?: boolean;
+  has_bank_account?: boolean;
+  has_income_certificate?: boolean;
+  has_domicile_certificate?: boolean;
+  has_ration_card?: boolean;
   is_onboarded?: boolean;
   members?: any[];
 }
@@ -34,7 +53,8 @@ interface AuthContextType {
   setShowAuthModal: (open: boolean) => void;
   showOnboardingModal: boolean;
   setShowOnboardingModal: (open: boolean) => void;
-  signInWithGoogle: () => Promise<{ error?: string }>;
+  signInWithEmail: (email: string, password?: string, name?: string) => Promise<{ success: boolean; error?: string }>;
+  signInWithGoogle: () => Promise<{ error?: string; url?: string }>;
   signInWithPhone: (phoneNumber: string) => Promise<{ success: boolean; error?: string }>;
   verifyPhoneOtp: (phoneNumber: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   devSignIn: (name: string, phone?: string) => Promise<{ success: boolean; error?: string }>;
@@ -55,6 +75,7 @@ const AuthContext = createContext<AuthContextType>({
   setShowAuthModal: () => {},
   showOnboardingModal: false,
   setShowOnboardingModal: () => {},
+  signInWithEmail: async () => ({ success: false }),
   signInWithGoogle: async () => ({}),
   signInWithPhone: async () => ({ success: false }),
   verifyPhoneOtp: async () => ({ success: false }),
@@ -67,6 +88,7 @@ const AuthContext = createContext<AuthContextType>({
 
 const TOKEN_KEY = "sarkari_saathi_token";
 const USER_KEY = "sarkari_saathi_user";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
@@ -81,17 +103,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Helper to fetch user profile using token
   const loadProfile = useCallback(async (authToken: string) => {
     try {
-      const res = await fetch("/api/profile", {
+      const res = await fetch(`${API_BASE}/profile`, {
         headers: { Authorization: `Bearer ${authToken}` },
         cache: "no-store",
       });
       if (res.ok) {
         const data = await res.json();
-        setProfile(data);
-        // If user is logged in but hasn't onboarded, prompt onboarding
-        if (data && !data.is_onboarded && (!data.name || data.name.trim() === "")) {
-          setShowOnboardingModal(true);
+        // If user logged in with Google/OAuth and profile name is default/empty, sync Google metadata
+        const savedUserStr = localStorage.getItem(USER_KEY);
+        if (savedUserStr) {
+          try {
+            const parsedUser = JSON.parse(savedUserStr);
+            const meta = parsedUser.user_metadata || {};
+            const googleName = meta.full_name || meta.name;
+            const googleAvatar = meta.avatar_url || meta.picture;
+            if (googleName && (!data.name || data.name === "नागरिक" || data.name === "नया नागरिक")) {
+              data.name = googleName;
+            }
+            if (googleAvatar && !data.avatar_url) {
+              data.avatar_url = googleAvatar;
+            }
+            if (parsedUser.email && !data.email) {
+              data.email = parsedUser.email;
+            }
+          } catch (_) {}
         }
+        setProfile(data);
       }
     } catch (e) {
       console.warn("Failed to load user profile:", e);
@@ -167,35 +204,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isConfigured, loadProfile]);
 
-  // Google OAuth Sign In
-  const signInWithGoogle = async (): Promise<{ error?: string }> => {
+  // Google OAuth Sign In using official Supabase Auth & Google Account Chooser
+  const signInWithGoogle = async (): Promise<{ error?: string; url?: string }> => {
     if (!isConfigured) {
       return {
         error:
-          "Supabase क्रेडेंशियल्स कॉन्फ़िगर नहीं हैं। कृपया .env में NEXT_PUBLIC_SUPABASE_URL और NEXT_PUBLIC_SUPABASE_ANON_KEY दर्ज करें।",
+          "Supabase क्रेडेंशियल्स कॉन्फ़िगर नहीं हैं। कृपया frontend/.env.local में NEXT_PUBLIC_SUPABASE_URL और NEXT_PUBLIC_SUPABASE_ANON_KEY दर्ज करें।",
       };
     }
-    try {
-      const redirectTo =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/auth/callback`
-          : undefined;
 
-      const { error } = await supabase.auth.signInWithOAuth({
+    try {
+      const origin =
+        typeof window !== "undefined" && window.location.origin
+          ? window.location.origin
+          : "http://localhost:3000";
+      const redirectTo = `${origin}/auth/callback`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo,
           queryParams: {
-            access_type: "offline",
-            prompt: "consent",
+            prompt: "select_account",
           },
+          skipBrowserRedirect: false,
         },
       });
 
-      if (error) return { error: error.message };
-      return {};
+      if (error) {
+        return { error: error.message };
+      }
+
+      return { url: data?.url };
     } catch (e: any) {
-      return { error: e.message || "Google लॉगिन विफल रहा" };
+      return { error: e.message || "Google लॉगिन प्रारंभ करने में विफल" };
     }
   };
 
@@ -286,13 +328,92 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign in or Sign up with any Email address
+  const signInWithEmail = async (
+    email: string,
+    password?: string,
+    name?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@") || !cleanEmail.includes(".")) {
+      return { success: false, error: "कृपया एक मान्य ईमेल पता दर्ज करें (उदा. yourname@gmail.com)" };
+    }
+
+    try {
+      if (isConfigured) {
+        // Try Supabase Auth first if configured
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: password || "SarkariSaathi@2026",
+        });
+
+        if (error) {
+          // If login fails, try signing up the user
+          const signUpRes = await supabase.auth.signUp({
+            email: cleanEmail,
+            password: password || "SarkariSaathi@2026",
+            options: {
+              data: { name: name || cleanEmail.split("@")[0] },
+            },
+          });
+
+          if (!signUpRes.error && signUpRes.data.session) {
+            setSession(signUpRes.data.session);
+            setUser(signUpRes.data.session.user);
+            setToken(signUpRes.data.session.access_token);
+            localStorage.setItem(TOKEN_KEY, signUpRes.data.session.access_token);
+            await loadProfile(signUpRes.data.session.access_token);
+            setShowAuthModal(false);
+            return { success: true };
+          }
+        } else if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+          setToken(data.session.access_token);
+          localStorage.setItem(TOKEN_KEY, data.session.access_token);
+          await loadProfile(data.session.access_token);
+          setShowAuthModal(false);
+          return { success: true };
+        }
+      }
+
+      // Standalone backend email authentication with deterministic UUID isolation
+      const res = await fetch(`${API_BASE}/auth/email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: cleanEmail,
+          password: password || "",
+          name: name || "",
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || "ईमेल प्रमाणीकरण विफल रहा");
+      }
+
+      const data = await res.json();
+      setToken(data.access_token);
+      setUser(data.user);
+      localStorage.setItem(TOKEN_KEY, data.access_token);
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+
+      await loadProfile(data.access_token);
+      setShowAuthModal(false);
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || "ईमेल लॉगिन विफल रहा।" };
+    }
+  };
+
   // Dev Session Sign In (For offline / fast evaluation with unique isolated user accounts)
   const devSignIn = async (
     name: string,
     phone?: string
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const res = await fetch("/api/auth/dev-session", {
+      const res = await fetch(`${API_BASE}/auth/dev-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -337,7 +458,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const deleteAccount = async (): Promise<{ success: boolean; error?: string }> => {
     if (!token) return { success: false, error: "लॉगिन नहीं हैं" };
     try {
-      const res = await fetch("/api/auth/delete-account", {
+      const res = await fetch(`${API_BASE}/auth/delete-account`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -372,6 +493,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setShowAuthModal,
         showOnboardingModal,
         setShowOnboardingModal,
+        signInWithEmail,
         signInWithGoogle,
         signInWithPhone,
         verifyPhoneOtp,
@@ -390,4 +512,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
-

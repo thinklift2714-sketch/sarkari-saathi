@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, FileCheck, Clock, ExternalLink, Plus, CheckCircle2, AlertCircle, Inbox } from "lucide-react";
+import { ChevronLeft, FileCheck, Clock, ExternalLink, Plus, CheckCircle2, AlertCircle, Inbox, BookOpen } from "lucide-react";
 import { fetchApplications } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -39,13 +39,22 @@ export function ScreenApplications({ schemeId, onNavigate }: ScreenApplicationsP
           <span className="text-base font-bold">आवेदन इतिहास व स्थिति</span>
         </button>
 
-        <button
-          onClick={() => onNavigate("schemes")}
-          className="flex items-center gap-1 px-3 py-1 rounded-full bg-white dark:bg-[#1D2D43] text-[#0645A8] dark:text-[#60A5FA] text-xs font-bold border border-transparent dark:border-[#2B3A50] transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>नया आवेदन</span>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => onNavigate("app_guide")}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-colors"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>गाइड</span>
+          </button>
+          <button
+            onClick={() => onNavigate("schemes")}
+            className="flex items-center gap-1 px-3 py-1 rounded-full bg-white dark:bg-[#1D2D43] text-[#0645A8] dark:text-[#60A5FA] text-xs font-bold border border-transparent dark:border-[#2B3A50] transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>नया</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3.5 pb-20 overscroll-contain">
@@ -67,13 +76,22 @@ export function ScreenApplications({ schemeId, onNavigate }: ScreenApplicationsP
                 आपने अभी तक किसी सरकारी योजना के लिए आवेदन दर्ज नहीं किया है। अपनी पात्रता जांचें और आवेदन प्रारंभ करें।
               </p>
             </div>
-            <button
-              onClick={() => onNavigate("schemes")}
-              className="py-2.5 px-4 bg-[#0645A8] hover:bg-[#1671E8] text-white text-xs font-bold rounded-xl shadow-xs transition-colors inline-flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span>योजनाएं खोजें और आवेदन करें</span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+              <button
+                onClick={() => onNavigate("app_guide")}
+                className="w-full sm:w-auto py-2.5 px-4 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-[#0645A8] dark:text-[#60A5FA] border border-blue-200 dark:border-blue-800/60 text-xs font-bold rounded-xl shadow-2xs transition-colors inline-flex items-center justify-center gap-1.5"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>चरणबद्ध आवेदन गाइड देखें</span>
+              </button>
+              <button
+                onClick={() => onNavigate("schemes")}
+                className="w-full sm:w-auto py-2.5 px-4 bg-[#0645A8] hover:bg-[#1671E8] text-white text-xs font-bold rounded-xl shadow-xs transition-colors inline-flex items-center justify-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>योजनाएं खोजें</span>
+              </button>
+            </div>
           </div>
         ) : (
           apps.map((app) => (

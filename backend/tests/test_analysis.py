@@ -6,6 +6,11 @@ from app.services.analysis_service import analysis_service
 client = TestClient(app)
 
 
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
 def test_start_analysis_endpoint():
     payload = {
         "user_input": "मेरी उम्र 52 वर्ष है और मेरे पति किसान थे जिनकी मृत्यु हो गई है। मैं वाराणसी में रहती हूँ।",

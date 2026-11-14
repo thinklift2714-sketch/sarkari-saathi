@@ -54,6 +54,9 @@ class DocumentService:
             return None
 
         req_docs = scheme.get("required_documents", [])
+        detailed_docs = scheme.get("detailed_documents", [])
+        detailed_by_name = {d.get("document_name_hindi", d.get("document_name", "")): d for d in detailed_docs}
+
         items: List[Dict[str, Any]] = []
 
         # If user is authenticated, use isolated user documents. If empty, all are 'missing'.
@@ -71,14 +74,34 @@ class DocumentService:
                 completed_count += 1
 
             guidance = DOCUMENT_GUIDANCE.get(doc_name, {})
+            det = detailed_by_name.get(doc_name, {})
+
+            # Scheme-specific why_needed
+            why_needed_hi = det.get(
+                "why_needed_hindi",
+                f"{scheme.get('scheme_name_hindi', 'इस योजना')} के तहत पात्रता सत्यापन हेतु अनिवार्य।"
+            )
+            why_needed_en = det.get(
+                "why_needed",
+                f"Mandatory document required to verify eligibility for {scheme.get('scheme_name', 'this scheme')}."
+            )
+            issuing_auth_hi = det.get("issuing_authority_hindi", guidance.get("how_to_get", "सक्षम सरकारी प्राधिकारी"))
+            issuing_auth_en = det.get("issuing_authority", "Concerned Government Authority")
+            is_mand = det.get("is_mandatory", True)
+
             items.append({
                 "id": f"doc_{abs(hash(doc_name)) % 100000}",
-                "document_name": doc_name,
+                "document_name": det.get("document_name", doc_name),
                 "document_name_hindi": doc_name,
-                "is_required": True,
+                "is_required": is_mand,
+                "is_mandatory": is_mand,
                 "status": status,
+                "why_needed": why_needed_en,
+                "why_needed_hindi": why_needed_hi,
+                "issuing_authority": issuing_auth_en,
+                "issuing_authority_hindi": issuing_auth_hi,
                 "instructions": guidance.get("instructions", "मान्य सरकारी प्रारूप में होना चाहिए।"),
-                "how_to_get": guidance.get("how_to_get", "नजदीकी CSC जन सेवा केंद्र या तहसील से संपर्क करें।")
+                "how_to_get": det.get("how_to_obtain_hindi") or guidance.get("how_to_get", "नजदीकी CSC जन सेवा केंद्र या तहसील से संपर्क करें।")
             })
 
         total = len(items)
@@ -86,7 +109,11 @@ class DocumentService:
 
         return {
             "scheme_id": scheme_id,
+            "scheme_name": scheme.get("scheme_name", ""),
             "scheme_name_hindi": scheme.get("scheme_name_hindi", ""),
+            "department": scheme.get("department", ""),
+            "department_hindi": scheme.get("department_hindi", ""),
+            "official_website": scheme.get("official_website", ""),
             "total_count": total,
             "completed_count": completed_count,
             "progress_percentage": progress,
@@ -99,4 +126,3 @@ class DocumentService:
 
 
 document_service = DocumentService()
-

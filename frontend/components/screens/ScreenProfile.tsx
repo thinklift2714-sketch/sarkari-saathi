@@ -71,12 +71,17 @@ export function ScreenProfile({ onNavigate, language = "hi" }: ScreenProfileProp
   const handleSave = async () => {
     setLoading(true);
     try {
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem("sarkari_saathi_active_profile", JSON.stringify(formData));
+        } catch (_) {}
+      }
       await saveProfile(formData);
       await refreshProfile();
       setSavedSuccess(true);
       setTimeout(() => {
         setSavedSuccess(false);
-        onNavigate("schemes");
+        onNavigate("schemes", { profile: formData });
       }, 1000);
     } catch (err) {
       console.error(err);

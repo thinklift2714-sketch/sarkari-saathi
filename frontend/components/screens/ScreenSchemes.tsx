@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ChevronLeft,
   CheckCircle2,
@@ -13,9 +13,59 @@ import {
   Landmark,
   ExternalLink,
   Filter,
+  Bookmark,
+  BookmarkCheck,
+  Heart,
 } from "lucide-react";
-import { discoverSchemes } from "@/lib/api";
+import { discoverSchemes, saveScheme, removeSavedScheme, fetchSavedSchemeIds } from "@/lib/api";
 import { translations, Language } from "@/lib/translations";
+
+// ── localStorage helpers for anonymous saves ─────────────────────────────────
+const LS_KEY = "sarkari_saathi_saved_schemes";
+
+function lsGetSavedIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return new Set<string>(parsed);
+  } catch (_) {}
+  return new Set();
+}
+
+function lsGetSavedSchemes(): any[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(LS_KEY + "_data");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed;
+  } catch (_) {}
+  return [];
+}
+
+function lsSaveScheme(scheme: any) {
+  const ids = lsGetSavedIds();
+  ids.add(scheme.scheme_id);
+  localStorage.setItem(LS_KEY, JSON.stringify(Array.from(ids)));
+  const schemes = lsGetSavedSchemes().filter((s) => s.scheme_id !== scheme.scheme_id);
+  schemes.push(scheme);
+  localStorage.setItem(LS_KEY + "_data", JSON.stringify(schemes));
+}
+
+function lsRemoveScheme(schemeId: string) {
+  const ids = lsGetSavedIds();
+  ids.delete(schemeId);
+  localStorage.setItem(LS_KEY, JSON.stringify(Array.from(ids)));
+  const schemes = lsGetSavedSchemes().filter((s) => s.scheme_id !== schemeId);
+  localStorage.setItem(LS_KEY + "_data", JSON.stringify(schemes));
+}
+
+function isUserLoggedIn(): boolean {
+  if (typeof window === "undefined") return false;
+  return !!localStorage.getItem("sarkari_saathi_token");
+}
 
 interface ScreenSchemesProps {
   onNavigate: (screen: string, extra?: any) => void;
@@ -37,16 +87,103 @@ const CATEGORIES_LIST = [
 
 export function ScreenSchemes({ onNavigate, language = "hi", extraData }: ScreenSchemesProps) {
   const t = translations[language] || translations.hi;
-  const [activeTab, setActiveTab] = useState<"eligible" | "potentially_eligible" | "more_info_required" | "not_eligible">("eligible");
+  const [activeTab, setActiveTab] = useState<"eligible" | "saved">("eligible");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [governmentLevel, setGovernmentLevel] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(extraData?.analysisReport || null);
+  const [savedSchemeIds, setSavedSchemeIds] = useState<Set<string>>(new Set());
+  const [savedSchemesData, setSavedSchemesData] = useState<any[]>([]);
+  const [toast, setToast] = useState<{ msg: string; visible: boolean }>({ msg: "", visible: false });
+
+  // Show a brief toast notification
+  const showToast = (msg: string) => {
+    setToast({ msg, visible: true });
+    setTimeout(() => setToast({ msg: "", visible: false }), 2000);
+  };
+
+  // Load saved IDs from localStorage (works for all users) and sync with backend if logged in
+  const loadSavedData = useCallback(() => {
+    const lsIds = lsGetSavedIds();
+    const lsData = lsGetSavedSchemes();
+    setSavedSchemeIds(lsIds);
+    setSavedSchemesData(lsData);
+
+    // If logged in, merge with backend saved IDs
+    if (isUserLoggedIn()) {
+      fetchSavedSchemeIds()
+        .then((ids) => {
+          if (Array.isArray(ids) && ids.length > 0) {
+            setSavedSchemeIds((prev) => {
+              const merged = new Set(prev);
+              ids.forEach((id) => merged.add(id));
+              return merged;
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSavedData();
+  }, [loadSavedData]);
+
+  const handleToggleSave = async (scheme: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const schemeId = scheme.scheme_id;
+    const isSaved = savedSchemeIds.has(schemeId);
+
+    // Optimistic UI update
+    if (isSaved) {
+      setSavedSchemeIds((prev) => { const n = new Set(prev); n.delete(schemeId); return n; });
+      setSavedSchemesData((prev) => prev.filter((s) => s.scheme_id !== schemeId));
+      lsRemoveScheme(schemeId);
+      showToast(language === "en" ? "Scheme removed from saved" : "योजना सहेजी गई सूची से हटाई गई");
+      // Backend sync for logged-in users
+      if (isUserLoggedIn()) {
+        removeSavedScheme(schemeId).catch(() => {});
+      }
+    } else {
+      setSavedSchemeIds((prev) => new Set(prev).add(schemeId));
+      setSavedSchemesData((prev) => {
+        if (prev.find((s) => s.scheme_id === schemeId)) return prev;
+        return [...prev, scheme];
+      });
+      lsSaveScheme(scheme);
+      showToast(language === "en" ? "Scheme saved! ✓" : "योजना सहेजी गई! ✓");
+      // Backend sync for logged-in users
+      if (isUserLoggedIn()) {
+        saveScheme(schemeId).catch(() => {});
+      }
+    }
+  };
+
+  const getActiveProfile = () => {
+    if (extraData?.profile && Object.keys(extraData.profile).length > 0) {
+      return extraData.profile;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem("sarkari_saathi_active_profile");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && Object.keys(parsed).length > 0) return parsed;
+        }
+      } catch (_) {}
+    }
+    return undefined;
+  };
 
   const loadSchemes = (cat = selectedCategory, query = searchQuery, level = governmentLevel) => {
     setLoading(true);
+    const activeProfile = getActiveProfile();
+    const activeConvId = extraData?.conversationId || (typeof window !== "undefined" ? sessionStorage.getItem("sarkari_saathi_active_conv_id") : undefined);
+
     discoverSchemes({
+      profile: activeProfile,
+      session_id: activeConvId || undefined,
       category: cat === "all" ? undefined : cat,
       search_query: query.trim() || undefined,
       government_level: level === "all" ? undefined : level,
@@ -76,10 +213,18 @@ export function ScreenSchemes({ onNavigate, language = "hi", extraData }: Screen
   };
 
   const results = data?.results || {};
-  const currentList = results[activeTab] || [];
+  // Saved tab uses persistent savedSchemesData (localStorage + backend), not filtered from current results
+  const currentList = activeTab === "saved" ? savedSchemesData : results.eligible || [];
 
   return (
     <div className="flex-1 min-h-0 flex flex-col bg-[#F7F9FC] dark:bg-[#0B1220] text-[#172033] dark:text-[#F8FAFC] overflow-hidden transition-colors duration-200">
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#172033] dark:bg-[#F8FAFC] text-white dark:text-[#172033] text-xs font-bold px-4 py-2 rounded-full shadow-lg animate-fade-in-down pointer-events-none">
+          {toast.msg}
+        </div>
+      )}
+
       {/* Header: < आपके लिए मिली योजनाएँ */}
       <div className="bg-[#0645A8] dark:bg-[#111C2E] text-white px-4 py-3 flex items-center justify-between shadow-md dark:border-b dark:border-[#2B3A50] flex-shrink-0 transition-colors">
         <button
@@ -90,7 +235,9 @@ export function ScreenSchemes({ onNavigate, language = "hi", extraData }: Screen
           <span className="text-base font-bold">{t.resultsHeader}</span>
         </button>
         <span className="text-xs bg-white/20 dark:bg-blue-900/40 border border-white/10 dark:border-blue-700/40 px-2.5 py-0.5 rounded-full font-semibold">
-          {summary.eligible_count + summary.potentially_eligible_count + summary.not_eligible_count} योजनाएं
+          {activeTab === "saved"
+            ? `${savedSchemesData.length} ${language === "en" ? "Saved" : "सहेजी गई"}`
+            : `${summary.eligible_count} ${language === "en" ? "Eligible" : "पात्र योजनाएं"}`}
         </span>
       </div>
 
@@ -184,41 +331,16 @@ export function ScreenSchemes({ onNavigate, language = "hi", extraData }: Screen
         </button>
 
         <button
-          onClick={() => setActiveTab("potentially_eligible")}
+          onClick={() => setActiveTab("saved")}
           className={`flex-1 min-w-[90px] py-1.5 px-2 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1 ${
-            activeTab === "potentially_eligible"
-              ? "bg-[#FF9933] dark:bg-[#F59E0B] text-white dark:text-[#0B1220] shadow-sm"
+            activeTab === "saved"
+              ? "bg-[#0645A8] dark:bg-[#3B82F6] text-white shadow-sm"
               : "bg-slate-100 dark:bg-[#111C2E] text-slate-600 dark:text-[#AAB8CC] hover:bg-slate-200 dark:hover:bg-[#1D2D43]"
           }`}
         >
-          <span>{t.tabPotential}</span>
-          <span>({summary.potentially_eligible_count})</span>
-        </button>
-
-        {summary.more_info_required_count > 0 && (
-          <button
-            onClick={() => setActiveTab("more_info_required")}
-            className={`flex-1 min-w-[90px] py-1.5 px-2 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1 ${
-              activeTab === "more_info_required"
-                ? "bg-amber-600 dark:bg-amber-500 text-white shadow-sm"
-                : "bg-slate-100 dark:bg-[#111C2E] text-slate-600 dark:text-[#AAB8CC] hover:bg-slate-200 dark:hover:bg-[#1D2D43]"
-            }`}
-          >
-            <span>{language === "en" ? "Need Info" : "अधूरी जानकारी"}</span>
-            <span>({summary.more_info_required_count})</span>
-          </button>
-        )}
-
-        <button
-          onClick={() => setActiveTab("not_eligible")}
-          className={`flex-1 min-w-[90px] py-1.5 px-2 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-1 ${
-            activeTab === "not_eligible"
-              ? "bg-slate-700 dark:bg-[#1D2D43] text-white shadow-sm"
-              : "bg-slate-100 dark:bg-[#111C2E] text-slate-600 dark:text-[#AAB8CC] hover:bg-slate-200 dark:hover:bg-[#1D2D43]"
-          }`}
-        >
-          <span>{t.tabNotEligible}</span>
-          <span>({summary.not_eligible_count})</span>
+          <Bookmark className="w-3 h-3 fill-current" />
+          <span>{language === "en" ? "Saved" : "सहेजी गई"}</span>
+          <span>({savedSchemesData.length})</span>
         </button>
       </div>
 
@@ -254,11 +376,29 @@ export function ScreenSchemes({ onNavigate, language = "hi", extraData }: Screen
             <span className="text-xs font-semibold">{t.ruleEngineEvaluating}</span>
           </div>
         ) : currentList.length === 0 ? (
-          <div className="text-center py-12 text-slate-500 dark:text-[#AAB8CC] bg-white dark:bg-[#172438] rounded-2xl p-6 border border-slate-200 dark:border-[#2B3A50]">
-            <p className="text-sm font-semibold">{t.noSchemesCategory}</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-              कृपया अन्य श्रेणी चुनें या खोज शब्द बदलें।
+          <div className="text-center py-12 text-slate-500 dark:text-[#AAB8CC] bg-white dark:bg-[#172438] rounded-2xl p-6 border border-slate-200 dark:border-[#2B3A50] space-y-1.5">
+            <Bookmark className="w-10 h-10 mx-auto mb-3 text-amber-400 dark:text-amber-500 opacity-60" />
+            <p className="text-sm font-semibold">
+              {activeTab === "saved"
+                ? (language === "en" ? "No saved schemes yet" : "आपने अभी तक कोई योजना सहेजी नहीं है")
+                : t.noSchemesCategory}
             </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              {activeTab === "saved"
+                ? (language === "en"
+                  ? "Tap the 'Save' button on any scheme card to bookmark it here."
+                  : "किसी भी योजना कार्ड पर 'सहेजें' बटन दबाएं और वह यहाँ दिखेगी।")
+                : "कृपया अन्य श्रेणी चुनें या खोज शब्द बदलें।"}
+            </p>
+            {activeTab === "saved" && (
+              <button
+                onClick={() => setActiveTab("eligible")}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#0645A8] dark:text-[#60A5FA] bg-blue-50 dark:bg-blue-950/40 px-4 py-2 rounded-full border border-blue-200 dark:border-blue-800"
+              >
+                <ArrowRight className="w-3.5 h-3.5" />
+                {language === "en" ? "Browse Eligible Schemes" : "पात्र योजनाएं देखें"}
+              </button>
+            )}
           </div>
         ) : (
           currentList.map((scheme: any) => {
@@ -291,6 +431,29 @@ export function ScreenSchemes({ onNavigate, language = "hi", extraData }: Screen
                       {language === "en" ? (scheme.department || scheme.department_hindi) : scheme.department_hindi}
                     </p>
                   </div>
+
+                  {/* Save Button — prominent with label */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleToggleSave(scheme, e)}
+                    title={savedSchemeIds.has(scheme.scheme_id) ? "सहेजी गई सूची से हटाएं" : "योजना सहेजें"}
+                    className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-all min-w-[48px] ${
+                      savedSchemeIds.has(scheme.scheme_id)
+                        ? "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 shadow-sm"
+                        : "bg-slate-50 dark:bg-[#111C2E] text-slate-400 dark:text-[#AAB8CC] border-slate-200 dark:border-[#2B3A50] hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-300 dark:hover:border-amber-700"
+                    }`}
+                  >
+                    {savedSchemeIds.has(scheme.scheme_id) ? (
+                      <BookmarkCheck className="w-4 h-4 fill-current" />
+                    ) : (
+                      <Bookmark className="w-4 h-4" />
+                    )}
+                    <span className="text-[9px] font-bold leading-none">
+                      {savedSchemeIds.has(scheme.scheme_id)
+                        ? (language === "en" ? "Saved" : "सहेजी")
+                        : (language === "en" ? "Save" : "सहेजें")}
+                    </span>
+                  </button>
                 </div>
 
                 {/* Badges Row */}

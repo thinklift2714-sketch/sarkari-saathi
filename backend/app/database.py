@@ -441,7 +441,7 @@ DB_SCHEMES: List[Dict[str, Any]] = [
         "ministry": "Ministry of Rural Development, Government of India / SSPY UP",
         "ministry_hindi": "समाज कल्याण विभाग, उत्तर प्रदेश",
         "central_or_state": "state",
-        "applicable_states": ["उत्तर प्रदेश", "UP", "All"],
+        "applicable_states": ["उत्तर प्रदेश", "UP"],
         "beneficiary_tags": ["widow", "bpl", "poor", "rural"],
         "benefits": {
             "annual_total": 30000,
@@ -1648,7 +1648,7 @@ DB_SCHEMES: List[Dict[str, Any]] = [
             "description": "5 kg free foodgrain per person per month",
             "description_hindi": "प्रति व्यक्ति 5 किलो मुफ्त राशन (गेहूं/चावल) हर महीने कोटेदार के माध्यम से।"
         },
-        "eligibility_criteria": {
+        "eligibility_conditions": {
             "min_age": 0,
             "max_age": 120,
             "gender": "any",
@@ -1697,7 +1697,7 @@ DB_SCHEMES: List[Dict[str, Any]] = [
             "description": "Rs 20,000 - 35,000 wedding incentive grant",
             "description_hindi": "शादी के उपरांत ₹20,000 से ₹35,000 की एकमुश्त अनुदान सहायता।"
         },
-        "eligibility_criteria": {
+        "eligibility_conditions": {
             "min_age": 18,
             "max_age": 45,
             "gender": "any",
@@ -1724,6 +1724,640 @@ DB_SCHEMES: List[Dict[str, Any]] = [
         "official_source": "दिव्यांगजन सशक्तिकरण विभाग, उत्तर प्रदेश सरकार",
         "last_verified_at": "2024-11-01",
         "is_active": True
+    },
+    # 38. Mukhyamantri Yuva Sambal Yojana (Rajasthan)
+    {
+        "id": "scheme_rajasthan_yuva_sambal",
+        "scheme_name": "Mukhyamantri Yuva Sambal Yojana (MYSY) - Rajasthan Unemployment Allowance",
+        "scheme_name_hindi": "मुख्यमंत्री युवा संबल योजना (राजस्थान बेरोजगारी भत्ता एवं कौशल इंटर्नशिप)",
+        "category": "employment",
+        "category_hindi": "रोजगार एवं युवा कल्याण",
+        "description": "Financial assistance of Rs 4,000/month (male) and Rs 4,500/month (female/divyang) for unemployed graduate youth in Rajasthan along with skill internship.",
+        "description_hindi": "राजस्थान के बेरोजगार स्नातक युवाओं को ₹4,000 प्रति माह (पुरुष) एवं ₹4,500 प्रति माह (महिला/दिव्यांग) बेरोजगारी भत्ता तथा 4 घंटे प्रतिदिन कौशल इंटर्नशिप।",
+        "department": "Department of Skill, Employment and Entrepreneurship",
+        "department_hindi": "कौशल, नियोजन एवं उद्यमिता विभाग, राजस्थान सरकार",
+        "ministry": "Government of Rajasthan",
+        "ministry_hindi": "राजस्थान सरकार",
+        "central_or_state": "state",
+        "applicable_states": ["राजस्थान", "Rajasthan"],
+        "beneficiary_tags": ["youth", "unemployed", "graduate", "rajasthan", "allowance", "skill"],
+        "benefits": {
+            "monthly": 4000,
+            "annual_total": 48000,
+            "description_hindi": "₹4,000 प्रति माह (पुरुष) / ₹4,500 प्रति माह (महिला/दिव्यांग/ट्रांसजेंडर) बेरोजगारी भत्ता अधिकतम 2 वर्ष तक।",
+            "description_en": "Monthly unemployment allowance of Rs 4,000 (male) or Rs 4,500 (female/divyang) up to 2 years with 4 hours daily internship."
+        },
+        "eligibility_conditions": {
+            "min_age": 21,
+            "max_age": 35,
+            "gender": "any",
+            "states": ["राजस्थान", "Rajasthan"],
+            "education": ["स्नातक (Graduate)", "graduate", "स्नातक", "post graduate"],
+            "occupation": ["बेरोजगार", "बेरोजगार युवा", "unemployed", "unemployed graduate"],
+            "max_annual_income": 200000.0
+        },
+        "required_documents": [
+            "जन आधार कार्ड (Jan Aadhaar Card)",
+            "मूल निवास प्रमाण पत्र (Rajasthan Domicile Certificate)",
+            "स्नातक डिग्री / अंकतालिका (Graduation Marksheet / Degree - B.Com/BA/B.Sc)",
+            "पारिवारिक आय प्रमाण पत्र (Income Certificate < Rs 2 Lakh)",
+            "बेरोजगारी का स्व-घोषणा पत्र (Unemployment Self Declaration)",
+            "बैंक खाता पासबुक (Jan Aadhaar linked Bank Account)"
+        ],
+        "optional_documents": ["जाति प्रमाण पत्र", "दिव्यांग प्रमाण पत्र (यदि लागू हो)"],
+        "application_steps": [
+            {"step": 1, "title": "जन आधार कार्ड से SSO ID लिंक करें", "desc": "sso.rajasthan.gov.in पर अपनी एसएसओ आईडी बनाएं व जन आधार से मैप करें।"},
+            {"step": 2, "title": "Employment Management System पोर्टल खोलें", "desc": "SSO में Employment Exchange एप खोलकर बेरोजगारी भत्ता आवेदन फॉर्म भरें।"},
+            {"step": 3, "title": "दस्तावेज़ अपलोड करें", "desc": "स्नातक अंकतालिका (B.Com/BA/B.Sc), आय प्रमाण पत्र (परिशिष्ट-I व K) व मूल निवास अपलोड करें।"},
+            {"step": 4, "title": "कौशल प्रशिक्षण व इंटर्नशिप सहमति", "desc": "RSLDC कौशल प्रशिक्षण और किसी सरकारी कार्यालय में 4 घंटे प्रतिदिन इंटर्नशिप की सहमति दें।"},
+            {"step": 5, "title": "मासिक भत्ता डीबीटी द्वारा प्राप्त करें", "desc": "जिला रोजगार अधिकारी के सत्यापन उपरांत ₹4,000/माह सीधे बैंक खाते में आएंगे।"}
+        ],
+        "official_website": "https://employment.livelihoods.rajasthan.gov.in",
+        "official_application_url": "https://sso.rajasthan.gov.in",
+        "official_source": "कौशल, नियोजन एवं उद्यमिता विभाग, राजस्थान सरकार / जन सूचना पोर्टल",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 39. Prime Minister's Employment Generation Programme (PMEGP)
+    {
+        "id": "scheme_pmegp",
+        "scheme_name": "Prime Minister's Employment Generation Programme (PMEGP)",
+        "scheme_name_hindi": "प्रधानमंत्री रोजगार सृजन कार्यक्रम (PMEGP - नया व्यवसाय/उद्योग सब्सिडी)",
+        "category": "employment",
+        "category_hindi": "रोजगार एवं स्वरोजगार",
+        "description": "Credit-linked subsidy scheme offering 15% to 35% government subsidy on bank project loans up to Rs 50 lakh for manufacturing and Rs 20 lakh for service/business ventures.",
+        "description_hindi": "नया उद्योग, व्यापार या सर्विस बिजनेस शुरू करने हेतु ₹50 लाख (विनिर्माण) व ₹20 लाख (सर्विस/बिजनेस) तक के प्रोजेक्ट पर 15% से 35% तक सरकारी सब्सिडी।",
+        "department": "Khadi and Village Industries Commission (KVIC)",
+        "department_hindi": "सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय (MSME), भारत सरकार",
+        "ministry": "Ministry of Micro, Small and Medium Enterprises",
+        "ministry_hindi": "सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय, भारत सरकार",
+        "central_or_state": "central",
+        "applicable_states": ["All"],
+        "beneficiary_tags": ["youth", "startup", "entrepreneur", "business", "unemployed", "subsidy", "loan"],
+        "benefits": {
+            "max_project_cost": 5000000,
+            "subsidy_rate": "15% to 35%",
+            "description_hindi": "नया बिजनेस या सर्विस यूनिट शुरू करने पर बैंक ऋण पर 15% से 35% तक मार्जिन मनी (सब्सिडी) सरकार द्वारा वहन की जाती है।",
+            "description_en": "Government subsidy of 15% to 35% on project cost up to Rs 50 lakh (manufacturing) and Rs 20 lakh (service/business)."
+        },
+        "eligibility_conditions": {
+            "min_age": 18,
+            "max_age": 65,
+            "gender": "any",
+            "states": ["All"],
+            "education": ["8th", "10th", "12th", "स्नातक (Graduate)", "graduate", "diploma", "btech", "ba", "bcom"],
+            "occupation": ["any", "बेरोजगार", "बेरोजगार युवा", "unemployed", "व्यवसायी", "कारीगर / कामगार", "स्वरोजगार", "entrepreneur", "youth"]
+        },
+        "required_documents": [
+            "आधार कार्ड (Aadhaar Card)",
+            "शैक्षणिक योग्यता प्रमाण पत्र (Graduation Degree/Marksheet)",
+            "प्रोजेक्ट रिपोर्ट / बिजनेस प्लान (Detailed Project Report - DPR)",
+            "निवास प्रमाण पत्र (Domicile / Resident Certificate)",
+            "पैन कार्ड (PAN Card)",
+            "बैंक खाता विवरण / पासबुक (Bank Account Passbook)"
+        ],
+        "optional_documents": ["जाति प्रमाण पत्र (SC/ST/OBC हेतु 35% सब्सिडी)", "ग्रामीण क्षेत्र प्रमाण पत्र (EDP सर्टिफिकेट)"],
+        "application_steps": [
+            {"step": 1, "title": "प्रोजेक्ट रिपोर्ट तैयार करें", "desc": "प्रस्तावित बिजनेस या सर्विस यूनिट का अनुमानित बजट और प्रोजेक्ट रिपोर्ट (DPR) तैयार करें।"},
+            {"step": 2, "title": "kviconline.gov.in पर ऑनलाइन आवेदन", "desc": "PMEGP ई-पोर्टल पर 'Apply Online for New Unit' पर क्लिक कर फॉर्म भरें।"},
+            {"step": 3, "title": "दस्तावेज़ और प्रोजेक्ट रिपोर्ट अपलोड करें", "desc": "आधार, डिग्री/मार्कशीट, डीपीआर और फोटो पोर्टल पर अपलोड करें।"},
+            {"step": 4, "title": "डीएलटीएफसी जिला टास्क फोर्स समिति सत्यापन", "desc": "जिला उद्योग केंद्र (DIC) या KVIC द्वारा आवेदन की जांच कर बैंक को भेजा जाता है।"},
+            {"step": 5, "title": "बैंक ऋण व मार्जिन मनी सब्सिडी स्वीकृति", "desc": "बैंक ऋण मंजूर होने और ईडीपी प्रशिक्षण के बाद सब्सिडी सीधे बैंक खाते में जमा होती है।"}
+        ],
+        "official_website": "https://www.kviconline.gov.in/pmegpeportal/pmegphome/index.jsp",
+        "official_application_url": "https://www.kviconline.gov.in/pmegpeportal/pmegphome/index.jsp",
+        "official_source": "सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय (MSME), भारत सरकार / KVIC",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 40. Pradhan Mantri MUDRA Yojana (PMMY)
+    {
+        "id": "scheme_pm_mudra",
+        "scheme_name": "Pradhan Mantri MUDRA Yojana (PMMY) - Business Loan",
+        "scheme_name_hindi": "प्रधानमंत्री मुद्रा योजना (PMMY - सूक्ष्म व लघु व्यवसाय ऋण)",
+        "category": "employment",
+        "category_hindi": "रोजगार एवं स्वरोजगार",
+        "description": "Collateral-free institutional loans up to Rs 10 lakh to micro/small enterprises and first-time entrepreneurs under Shishu, Kishore, and Tarun categories.",
+        "description_hindi": "नया व्यापार शुरू करने अथवा वर्तमान व्यवसाय बढ़ाने के लिए ₹10 लाख तक का बिना गारंटी (कोलेटरल-फ्री) संस्थागत बैंक ऋण (शिशु, किशोर व तरुण श्रेणियां)।",
+        "department": "Department of Financial Services",
+        "department_hindi": "वित्तीय सेवाएं विभाग, वित्त मंत्रालय, भारत सरकार",
+        "ministry": "Ministry of Finance",
+        "ministry_hindi": "वित्त मंत्रालय, भारत सरकार",
+        "central_or_state": "central",
+        "applicable_states": ["All"],
+        "beneficiary_tags": ["business", "loan", "startup", "youth", "unemployed", "trader", "self_employed"],
+        "benefits": {
+            "max_loan": 1000000,
+            "description_hindi": "शिशु (₹50,000 तक), किशोर (₹50,000 से ₹5 लाख), और तरुण (₹5 लाख से ₹10 लाख) तक का बिना किसी जमानत/गारंटी के आसान ऋण।",
+            "description_en": "Collateral-free business loans up to Rs 10 lakh across Shishu (up to Rs 50k), Kishore (Rs 50k-5L), and Tarun (Rs 5L-10L) categories."
+        },
+        "eligibility_conditions": {
+            "min_age": 18,
+            "max_age": 65,
+            "gender": "any",
+            "states": ["All"],
+            "occupation": ["बेरोजगार", "बेरोजगार युवा", "unemployed", "छोटा व्यापारी", "व्यवसायी", "दुकानदार", "कारीगर / कामगार", "स्वरोजगार", "youth"]
+        },
+        "required_documents": [
+            "पहचान प्रमाण पत्र (Aadhaar Card / Voter ID)",
+            "निवास प्रमाण पत्र (Proof of Residence)",
+            "व्यवसाय योजना / कोटेशन (Business Plan / Quotation for machinery or goods)",
+            "बैंक खाता विवरणी (Bank Statement - last 6 months)",
+            "पासपोर्ट आकार फोटो (Passport-sized photographs)",
+            "पैन कार्ड (PAN Card)"
+        ],
+        "optional_documents": ["जाति / विशेष श्रेणी प्रमाण पत्र (यदि लागू हो)"],
+        "application_steps": [
+            {"step": 1, "title": "बिजनेस आइडिया व कोटेशन तैयार करें", "desc": "शुरू करने वाले व्यवसाय या दुकान का संक्षिप्त विवरण व आवश्यक सामान का कोटेशन बनाएं।"},
+            {"step": 2, "title": "उद्यमीमित्र पोर्टल (udyamimitra.in) या बैंक में आवेदन", "desc": "udyamimitra.in पर ऑनलाइन या नजदीकी किसी भी सरकारी/निजी बैंक शाखा में जाएं।"},
+            {"step": 3, "title": "मुद्रा ऋण आवेदन पत्र भरें", "desc": "शिशु / किशोर / तरुण श्रेणी चुनकर आवश्यक पहचान पत्र व कोटेशन संलग्न करें।"},
+            {"step": 4, "title": "बैंक मूल्यांकन व स्वीकृति", "desc": "बैंक द्वारा आपके प्रोजेक्ट व सिबिल स्कोर का मूल्यांकन किया जाता है।"},
+            {"step": 5, "title": "मुद्रा कार्ड व ऋण राशि संवितरण", "desc": "ऋण स्वीकृत होने पर बैंक खाते में राशि व मुद्रा डेबिट कार्ड प्रदान किया जाता है।"}
+        ],
+        "official_website": "https://www.mudra.org.in",
+        "official_application_url": "https://www.udyamimitra.in",
+        "official_source": "वित्तीय सेवाएं विभाग, वित्त मंत्रालय, भारत सरकार / MUDRA",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 41. Pradhan Mantri Kaushal Vikas Yojana (PMKVY 4.0)
+    {
+        "id": "scheme_pmkvy",
+        "scheme_name": "Pradhan Mantri Kaushal Vikas Yojana (PMKVY 4.0)",
+        "scheme_name_hindi": "प्रधानमंत्री कौशल विकास योजना 4.0 (निःशुल्क कौशल प्रशिक्षण व प्रमाणन)",
+        "category": "employment",
+        "category_hindi": "कौशल विकास एवं रोजगार",
+        "description": "Free industry-relevant skill training, government certification, monetary rewards, and placement assistance for unemployed youth across India.",
+        "description_hindi": "भारत के युवाओं को उद्योग-उन्मुख निःशुल्क कौशल प्रशिक्षण, राष्ट्रीय कौशल विकास निगम (NSDC) प्रमाणपत्र, स्टाइपेंड और रोजगार मेलों के जरिए नौकरी सहायता।",
+        "department": "National Skill Development Corporation (NSDC)",
+        "department_hindi": "कौशल विकास एवं उद्यमिता मंत्रालय, भारत सरकार",
+        "ministry": "Ministry of Skill Development and Entrepreneurship",
+        "ministry_hindi": "कौशल विकास एवं उद्यमिता मंत्रालय, भारत सरकार",
+        "central_or_state": "central",
+        "applicable_states": ["All"],
+        "beneficiary_tags": ["youth", "skill", "training", "unemployed", "certification", "placement"],
+        "benefits": {
+            "description_hindi": "100% निःशुल्क आधुनिक तकनीकी व व्यावसायिक प्रशिक्षण, सरकारी प्रमाण पत्र, दुर्घटना बीमा और रोजगार सहायता।",
+            "description_en": "100% free industry skill training, recognized NSDC certificate, stipend allowance, and placement support."
+        },
+        "eligibility_conditions": {
+            "min_age": 15,
+            "max_age": 45,
+            "gender": "any",
+            "states": ["All"],
+            "occupation": ["बेरोजगार", "बेरोजगार युवा", "unemployed", "छात्र", "youth", "dropouts"]
+        },
+        "required_documents": [
+            "आधार कार्ड (Aadhaar Card)",
+            "बैंक पासबुक (Bank Account linked with Aadhaar)",
+            "शैक्षणिक प्रमाण पत्र (10th/12th/Graduation Certificate)",
+            "पासपोर्ट साइज फोटो (Passport Photo)"
+        ],
+        "optional_documents": ["जाति प्रमाण पत्र (यदि लागू हो)"],
+        "application_steps": [
+            {"step": 1, "title": "Skill India Digital पोर्टल खोलें", "desc": "skillindiadigital.gov.in पर जाएं और अपना मोबाइल नंबर दर्ज कर लॉगिन करें।"},
+            {"step": 2, "title": "मनपसंद कोर्स व ट्रेनिंग सेंटर चुनें", "desc": "अपनी रुचि अनुसार (IT, अकाउंटिंग, रिटेल, मैन्युफैक्चरिंग आदि) और निकटतम प्रशिक्षण केंद्र चुनें।"},
+            {"step": 3, "title": "प्रशिक्षण केंद्र पर निःशुल्क प्रशिक्षण लें", "desc": "निर्धारित अवधि (200-400 घंटे) तक कुशल प्रशिक्षकों द्वारा प्रैक्टिकल ट्रेनिंग प्राप्त करें।"},
+            {"step": 4, "title": "आकलन परीक्षा व NSDC प्रमाणन", "desc": "कोर्स पूरा होने पर परीक्षा दें और भारत सरकार का मान्यता प्राप्त प्रमाणपत्र पाएं।"},
+            {"step": 5, "title": "रोजगार मेले व जॉब प्लेसमेंट", "desc": "कौशल पोर्टल पर आयोजित रोजगार मेलों के जरिए सीधे कंपनियों में नौकरी प्राप्त करें।"}
+        ],
+        "official_website": "https://www.msde.gov.in",
+        "official_application_url": "https://www.skillindiadigital.gov.in",
+        "official_source": "कौशल विकास एवं उद्यमिता मंत्रालय, भारत सरकार / NSDC",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 42. Rajasthan Mukhyamantri Laghu Udyog Protsahan Yojana (MLUPY)
+    {
+        "id": "scheme_rajasthan_mlupy",
+        "scheme_name": "Rajasthan Mukhyamantri Laghu Udyog Protsahan Yojana (MLUPY)",
+        "scheme_name_hindi": "मुख्यमंत्री लघु उद्योग प्रोत्साहन योजना (राजस्थान - रियायती ब्याज व्यवसाय ऋण)",
+        "category": "employment",
+        "category_hindi": "रोजगार एवं स्वरोजगार",
+        "description": "Interest subsidy up to 8% on business loans up to Rs 25 lakh (and up to Rs 10 crore) for setting up new manufacturing, service, or retail enterprises in Rajasthan.",
+        "description_hindi": "राजस्थान में नया उद्योग, सर्विस बिजनेस या व्यापार शुरू करने हेतु ₹25 लाख तक के ऋण पर 8% ब्याज अनुदान तथा ₹10 करोड़ तक रियायती ऋण।",
+        "department": "Department of Industries and Commerce",
+        "department_hindi": "उद्योग एवं वाणिज्य विभाग, राजस्थान सरकार",
+        "ministry": "Government of Rajasthan",
+        "ministry_hindi": "राजस्थान सरकार",
+        "central_or_state": "state",
+        "applicable_states": ["राजस्थान", "Rajasthan"],
+        "beneficiary_tags": ["business", "loan", "subsidy", "rajasthan", "youth", "entrepreneur", "startup"],
+        "benefits": {
+            "max_loan": 2500000,
+            "interest_subsidy": "8% on loans up to Rs 25 Lakh",
+            "description_hindi": "₹25 लाख तक के ऋण पर 8% ब्याज अनुदान, ₹5 करोड़ तक 6% तथा ₹10 करोड़ तक 5% ब्याज अनुदान सरकार द्वारा।",
+            "description_en": "8% interest subsidy on loans up to Rs 25 lakh, 6% up to Rs 5 crore, and 5% up to Rs 10 crore for new ventures in Rajasthan."
+        },
+        "eligibility_conditions": {
+            "min_age": 18,
+            "max_age": 65,
+            "gender": "any",
+            "states": ["राजस्थान", "Rajasthan"],
+            "occupation": ["बेरोजगार", "बेरोजगार युवा", "unemployed", "व्यवसायी", "उद्यमी", "स्वरोजगार", "youth"]
+        },
+        "required_documents": [
+            "जन आधार कार्ड (Jan Aadhaar Card)",
+            "मूल निवास प्रमाण पत्र (Rajasthan Domicile Certificate)",
+            "प्रोजेक्ट रिपोर्ट / कार्य योजना (Detailed Project Report - DPR)",
+            "शैक्षणिक योग्यता प्रमाण पत्र (Graduation / Degree Certificate)",
+            "पैन कार्ड (PAN Card)",
+            "बैंक खाता विवरण (Bank Statement)"
+        ],
+        "optional_documents": ["उद्यम पंजीकरण (Udyam Registration)", "भूमि / दुकान किरायानामा"],
+        "application_steps": [
+            {"step": 1, "title": "प्रोजेक्ट रिपोर्ट व कोटेशन तैयार करें", "desc": "शुरू करने वाले व्यवसाय या सर्विस सेंटर की विस्तृत कार्य योजना व बजट तैयार करें।"},
+            {"step": 2, "title": "SSO Rajasthan (sso.rajasthan.gov.in) पर लॉगिन करें", "desc": "एसएसओ पोर्टल पर MLUPY (Mukhyamantri Laghu Udyog Protsahan) एप चुनें।"},
+            {"step": 3, "title": "ऑनलाइन आवेदन फॉर्म भरें", "desc": "जन आधार से विवरण स्वतः सत्यापित होगा, प्रोजेक्ट विवरण व बैंक शाखा चुनें।"},
+            {"step": 4, "title": "जिला उद्योग केंद्र (DIC) से बैंक को अग्रसारण", "desc": "डीआईसी टास्क फोर्स आवेदन का परीक्षण कर नोडल बैंक को भेजती है।"},
+            {"step": 5, "title": "ऋण संवितरण व ब्याज अनुदान", "desc": "ऋण स्वीकृति के बाद सरकार द्वारा 8% ब्याज अनुदान सीधे बैंक खाते में समायोजित होता है।"}
+        ],
+        "official_website": "https://industries.rajasthan.gov.in",
+        "official_application_url": "https://sso.rajasthan.gov.in",
+        "official_source": "उद्योग एवं वाणिज्य विभाग, राजस्थान सरकार",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 43. MP Mukhyamantri Udyam Kranti Yojana
+    {
+        "id": "scheme_mp_udyam_kranti",
+        "scheme_name": "MP Mukhyamantri Udyam Kranti Yojana",
+        "scheme_name_hindi": "मुख्यमंत्री उद्यम क्रांति योजना (मध्य प्रदेश)",
+        "category": "employment",
+        "category_hindi": "रोजगार एवं स्वरोजगार",
+        "description": "Subsidized bank loan guarantee and 3% interest subsidy up to Rs 50 lakh for manufacturing and Rs 25 lakh for service/business enterprises for Madhya Pradesh citizens aged 18-45.",
+        "description_hindi": "मध्य प्रदेश के 18 से 45 वर्ष के युवाओं को नया व्यवसाय/सेवा इकाई शुरू करने हेतु ₹1 से ₹25 लाख तथा उद्योग हेतु ₹50 लाख तक का ऋण 3% वार्षिक ब्याज अनुदान के साथ।",
+        "department": "Department of Micro, Small and Medium Enterprises (MSME)",
+        "department_hindi": "सूक्ष्म, लघु एवं मध्यम उद्यम विभाग, मध्य प्रदेश शासन",
+        "ministry": "Government of Madhya Pradesh",
+        "ministry_hindi": "मध्य प्रदेश शासन",
+        "central_or_state": "state",
+        "applicable_states": ["मध्य प्रदेश", "Madhya Pradesh", "MP"],
+        "beneficiary_tags": ["business", "loan", "subsidy", "madhya pradesh", "youth", "entrepreneur", "tailoring", "women"],
+        "benefits": {
+            "max_loan": 2500000,
+            "interest_subsidy": "3% per annum for 7 years",
+            "description_hindi": "सेवा व व्यवसाय के लिए ₹25 लाख तक ऋण, सरकार द्वारा 3% ब्याज अनुदान तथा शत-प्रतिशत बैंक गारंटी (CGTMSE)।",
+            "description_en": "Up to Rs 25 lakh collateral-free loan for service/business ventures with 3% interest subsidy for 7 years."
+        },
+        "eligibility_conditions": {
+            "min_age": 18,
+            "max_age": 45,
+            "gender": "any",
+            "states": ["मध्य प्रदेश", "Madhya Pradesh", "MP"],
+            "education": ["8th", "10th", "12th", "12th Pass", "स्नातक (Graduate)", "graduate", "diploma"],
+            "max_annual_income": 1200000,
+            "occupation": ["any", "मजदूर", "श्रमिक", "दहाड़ी", "दिहाड़ी", "कारीगर", "दर्जी", "बेरोजगार", "व्यवसायी", "स्वरोजगार", "youth"]
+        },
+        "required_documents": [
+            "समग्र आईडी (Samagra ID)",
+            "आधार कार्ड (Aadhaar Card)",
+            "मूल निवास प्रमाण पत्र (MP Domicile Certificate)",
+            "10वीं / 12वीं अंकसूची (Mark Sheet)",
+            "प्रोजेक्ट रिपोर्ट / कोटेशन (DPR / Project Report)",
+            "बैंक पासबुक व पैन कार्ड"
+        ],
+        "optional_documents": ["जाति प्रमाण पत्र", "किरायानामा / जमीन दस्तावेज"],
+        "application_steps": [
+            {"step": 1, "title": "प्रोजेक्ट रिपोर्ट तैयार करें", "desc": "प्रस्तावित सिलाई केंद्र / व्यवसाय का बजट व मशीनरी कोटेशन तैयार करें।"},
+            {"step": 2, "title": "MP MSME पोर्टल पर ऑनलाइन आवेदन", "desc": "samast.mponline.gov.in पर उद्यम क्रांति योजना अंतर्गत फॉर्म भरें।"},
+            {"step": 3, "title": "दस्तावेज़ सत्यापन एवं बैंक स्वीकृति", "desc": "जिला व्यापार एवं उद्योग केंद्र (DTIC) आवेदन जांच कर बैंक को भेजता है।"}
+        ],
+        "official_website": "https://msme.mponline.gov.in",
+        "official_application_url": "https://samast.mponline.gov.in",
+        "official_source": "सूक्ष्म, लघु एवं मध्यम उद्यम विभाग, मध्य प्रदेश शासन",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 44. Mukhyamantri Ladli Behna Yojana (Madhya Pradesh)
+    {
+        "id": "scheme_mp_ladli_behna",
+        "scheme_name": "Mukhyamantri Ladli Behna Yojana",
+        "scheme_name_hindi": "मुख्यमंत्री लाड़ली बहना योजना (मध्य प्रदेश)",
+        "category": "women_child",
+        "category_hindi": "महिला एवं बाल विकास",
+        "description": "Monthly financial assistance of Rs 1,250 directly transferred to women aged 21-60 residing in Madhya Pradesh with annual family income up to Rs 2.5 lakh.",
+        "description_hindi": "मध्य प्रदेश की 21 से 60 वर्ष की विवाहित, विधवा व परित्यक्ता बहनों को ₹1,250 प्रतिमाह (वार्षिक ₹15,000) की प्रत्यक्ष आर्थिक सहायता।",
+        "department": "Women and Child Development Department",
+        "department_hindi": "महिला एवं बाल विकास विभाग, मध्य प्रदेश शासन",
+        "ministry": "Government of Madhya Pradesh",
+        "ministry_hindi": "मध्य प्रदेश शासन",
+        "central_or_state": "state",
+        "applicable_states": ["मध्य प्रदेश", "Madhya Pradesh", "MP"],
+        "beneficiary_tags": ["women", "financial_aid", "madhya pradesh", "monthly_pension", "married", "bpl"],
+        "benefits": {
+            "annual_total": 15000,
+            "monthly_amount": 1250,
+            "description_hindi": "प्रत्येक माह की 10 तारीख को ₹1,250 सीधे आधार लिंक बैंक खाते में (डीबीटी)।",
+            "description_en": "Rs 1,250 per month (Rs 15,000/year) DBT assistance directly to bank account."
+        },
+        "eligibility_conditions": {
+            "min_age": 21,
+            "max_age": 60,
+            "gender": "महिला",
+            "marital_status": ["विवाहित", "married", "विधवा", "widow", "widowed", "तलाकशुदा", "परित्यक्ता"],
+            "states": ["मध्य प्रदेश", "Madhya Pradesh", "MP"],
+            "max_annual_income": 250000
+        },
+        "required_documents": [
+            "समग्र परिवार आईडी (Samagra Family ID)",
+            "सदस्य समग्र आईडी (Member Samagra ID)",
+            "आधार कार्ड (Aadhaar Card with mobile linked)",
+            "डीबीटी सक्रिय बैंक खाता (DBT Enabled Bank Account)"
+        ],
+        "optional_documents": ["आय स्वघोषणा पत्र"],
+        "application_steps": [
+            {"step": 1, "title": "ई-केवाईसी पूर्ण करें", "desc": "समग्र पोर्टल पर आधार ई-केवाईसी और बैंक खाते में डीबीटी सक्रिय करवाएं।"},
+            {"step": 2, "title": "ग्राम पंचायत / वार्ड शिविर में आवेदन", "desc": "निकटतम ग्राम पंचायत या शहरी वार्ड कार्यालय में निःशुल्क फॉर्म भरें।"},
+            {"step": 3, "title": "स्वीकृति एवं मासिक डीबीटी", "desc": "पात्रता सूची में नाम आने के बाद हर महीने ₹1,250 सीधे खाते में प्राप्त होते हैं।"}
+        ],
+        "official_website": "https://cmladlibahna.mp.gov.in",
+        "official_application_url": "https://cmladlibahna.mp.gov.in",
+        "official_source": "महिला एवं बाल विकास विभाग, मध्य प्रदेश शासन",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 45. Rajarshi Chhatrapati Shahu Maharaj Shikshan Shulkh Shishyavrutti Yojna (Maharashtra EBC Higher Education Fee Reimbursement)
+    {
+        "id": "scheme_maha_ebc_scholarship",
+        "scheme_name": "Rajarshi Chhatrapati Shahu Maharaj Shikshan Shulkh Shishyavrutti Yojna (Maharashtra Higher Education EBC Fee Concession)",
+        "scheme_name_hindi": "राजर्षि छत्रपति शाहू महाराज शिक्षण शुल्क शिष्यवृत्ती योजना (उच्च शिक्षा शुल्क प्रतिपूर्ति - महाराष्ट्र)",
+        "category": "education",
+        "category_hindi": "शिक्षा एवं छात्रवृत्ति",
+        "description": "50% tuition and examination fee reimbursement for higher and technical education for Economically Backward Class (EBC) students in Maharashtra with annual family income up to Rs 8 lakh.",
+        "description_hindi": "महाराष्ट्र के आर्थिक रूप से कमजोर वर्ग (EBC) के विद्यार्थियों को उच्च एवं व्यावसायिक शिक्षा (डिग्री/डिप्लोमा) में 50% शिक्षण व परीक्षा शुल्क की प्रतिपूर्ति (वार्षिक पारिवारिक आय ₹8 लाख तक)।",
+        "department": "Directorate of Higher Education / Directorate of Technical Education",
+        "department_hindi": "उच्च एवं तकनीकी शिक्षा विभाग, महाराष्ट्र शासन",
+        "ministry": "Government of Maharashtra",
+        "ministry_hindi": "महाराष्ट्र शासन",
+        "central_or_state": "state",
+        "applicable_states": ["महाराष्ट्र", "Maharashtra"],
+        "beneficiary_tags": ["education", "scholarship", "higher_education", "college", "maharashtra", "ebc", "girls"],
+        "benefits": {
+            "fee_reimbursement": "50% of Tuition & Exam Fees",
+            "description_hindi": "कॉलेज की 50% ट्यूशन फीस और परीक्षा शुल्क की सीधी सरकारी प्रतिपूर्ति (माहाडीबीटी पोर्टल द्वारा)।",
+            "description_en": "50% reimbursement of tuition and examination fees for higher education through MahaDBT portal."
+        },
+        "eligibility_conditions": {
+            "states": ["महाराष्ट्र", "Maharashtra"],
+            "max_annual_income": 800000,
+            "is_student": True
+        },
+        "required_documents": [
+            "आधार कार्ड (Aadhaar Card)",
+            "महाराष्ट्र अधिवास प्रमाण पत्र (Maharashtra Domicile Certificate)",
+            "सक्षम प्राधिकारी द्वारा आय प्रमाण पत्र (Income Certificate up to Rs 8 Lakh)",
+            "10वीं व 12वीं अंकसूची (10th & 12th Marksheets)",
+            "कॉलेज प्रवेश रसीद व फीस पावती (College Admission Fee Receipt)",
+            "बैंक पासबुक (Aadhaar Seeded Bank Account)"
+        ],
+        "optional_documents": ["अल्पभूधारक शेतकरी प्रमाणपत्र (यदि लागू हो)"],
+        "application_steps": [
+            {"step": 1, "title": "माहाडीबीटी पोर्टल (mahadbt.maharashtra.gov.in) पर पंजीकरण", "desc": "विद्यार्थी अपने आधार कार्ड से MahaDBT पोर्टल पर प्रोफाइल बनाएं।"},
+            {"step": 2, "title": "योजना का चयन व दस्तावेज़ अपलोड", "desc": "उच्च शिक्षा विभाग अंतर्गत राजर्षि शाहू महाराज शुल्क प्रतिपूर्ति योजना चुनकर आय प्रमाण पत्र व फीस रसीद अपलोड करें।"},
+            {"step": 3, "title": "कॉलेज व विभाग सत्यापन", "desc": "कॉलेज प्राचार्य और सह-निदेशक द्वारा सत्यापन के बाद छात्रवृत्ति सीधे बैंक खाते में जमा होती है।"}
+        ],
+        "official_website": "https://mahadbt.maharashtra.gov.in",
+        "official_application_url": "https://mahadbt.maharashtra.gov.in",
+        "official_source": "उच्च एवं तकनीकी शिक्षा विभाग, महाराष्ट्र शासन (MahaDBT)",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 46. Mukhyamantri Majhi Ladki Bahin Yojana (Maharashtra)
+    {
+        "id": "scheme_maha_ladki_bahin",
+        "scheme_name": "Mukhyamantri Majhi Ladki Bahin Yojana (Maharashtra)",
+        "scheme_name_hindi": "मुख्यमंत्री माझी लाडकी बहीण योजना (महाराष्ट्र)",
+        "category": "women_child",
+        "category_hindi": "महिला एवं बाल विकास",
+        "description": "Monthly DBT financial aid of Rs 1,500 (Rs 18,000 annually) for resident women of Maharashtra aged 21-65 with family income up to Rs 2.5 lakh.",
+        "description_hindi": "महाराष्ट्र की 21 से 65 वर्ष आयु वर्ग की पात्र महिलाओं को ₹1,500 प्रतिमाह (वार्षिक ₹18,000) की प्रत्यक्ष आर्थिक सहायता।",
+        "department": "Women and Child Development Department",
+        "department_hindi": "महिला व बाल विकास विभाग, महाराष्ट्र शासन",
+        "ministry": "Government of Maharashtra",
+        "ministry_hindi": "महाराष्ट्र शासन",
+        "central_or_state": "state",
+        "applicable_states": ["महाराष्ट्र", "Maharashtra"],
+        "beneficiary_tags": ["women", "financial_aid", "maharashtra", "monthly_dbt", "married"],
+        "benefits": {
+            "annual_total": 18000,
+            "monthly_amount": 1500,
+            "description_hindi": "प्रत्येक माह ₹1,500 सीधे आधार लिंक बैंक खाते में (डीबीटी)।",
+            "description_en": "Rs 1,500 per month (Rs 18,000/year) DBT assistance directly to bank account."
+        },
+        "eligibility_conditions": {
+            "min_age": 21,
+            "max_age": 65,
+            "gender": "महिला",
+            "states": ["महाराष्ट्र", "Maharashtra"],
+            "max_annual_income": 250000
+        },
+        "required_documents": [
+            "आधार कार्ड (Aadhaar Card)",
+            "महाराष्ट्र अधिवास प्रमाण पत्र या 15 वर्ष पुराना राशन कार्ड / वोटर कार्ड",
+            "वार्षिक आय ₹2.5 लाख तक का आय प्रमाण पत्र या पीला/केसरी राशन कार्ड",
+            "बैंक पासबुक (Aadhaar Linked Bank Account)"
+        ],
+        "optional_documents": ["हमीपत्र (Self Declaration)"],
+        "application_steps": [
+            {"step": 1, "title": "ऑनलाइन अथवा नारी शक्ति दूत ऐप", "desc": "ladkibahin.maharashtra.gov.in अथवा Nari Shakti Doot ऐप पर फॉर्म भरें।"},
+            {"step": 2, "title": "आंगनवाड़ी केंद्र या सेतू सुविधा केंद्र पर सत्यापन", "desc": "स्थानीय आंगनवाड़ी सेविका द्वारा फॉर्म की जांच व अनुमोदन।"},
+            {"step": 3, "title": "स्वीकृति व मासिक डीबीटी", "desc": "मंजूरी के उपरांत हर माह ₹1,500 सीधे बैंक खाते में जमा होते हैं।"}
+        ],
+        "official_website": "https://ladkibahin.maharashtra.gov.in",
+        "official_application_url": "https://ladkibahin.maharashtra.gov.in",
+        "official_source": "महिला व बाल विकास विभाग, महाराष्ट्र शासन",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 47. Mukhyamantri Nishchay Swayam Sahayata Bhatta Yojana (MNSSBY - Bihar)
+    {
+        "id": "scheme_bihar_mnssby",
+        "scheme_name": "Mukhyamantri Nishchay Swayam Sahayata Bhatta Yojana (MNSSBY)",
+        "scheme_name_hindi": "मुख्यमंत्री निश्चय स्वयं सहायता भत्ता योजना (MNSSBY बिहार)",
+        "category": "employment",
+        "category_hindi": "रोजगार एवं युवा कल्याण",
+        "description": "Financial assistance of Rs 1,000 per month for up to 2 years (24 months) for unemployed youth in Bihar aged 20-25 searching for employment, along with free computer and language training (Kushal Yuva Program).",
+        "description_hindi": "बिहार के 20 से 25 वर्ष के बेरोजगार युवाओं को रोजगार तलाशने के दौरान 2 वर्षों तक ₹1,000 प्रति माह स्वयं सहायता भत्ता तथा साथ में कुशल युवा कार्यक्रम (KYP) के तहत निःशुल्क कंप्यूटर एवं भाषा प्रशिक्षण।",
+        "department": "Department of Planning and Development, Government of Bihar",
+        "department_hindi": "योजना एवं विकास विभाग, बिहार सरकार",
+        "ministry": "Government of Bihar (Saat Nishchay)",
+        "ministry_hindi": "बिहार सरकार (सात निश्चय)",
+        "central_or_state": "state",
+        "applicable_states": ["Bihar", "बिहार"],
+        "beneficiary_tags": ["youth", "unemployed", "graduate", "jobseeker"],
+        "benefits": {
+            "annual_total": 12000,
+            "description_hindi": "₹1,000 प्रति माह (2 वर्षों तक कुल ₹24,000) सीधा बैंक खाते में तथा मुफ्त KYP कौशल प्रशिक्षण",
+            "description_en": "Rs 1,000 per month for 2 years (total Rs 24,000) directly into bank account plus free skill training"
+        },
+        "eligibility_conditions": {
+            "states": ["Bihar", "बिहार"],
+            "min_age": 20,
+            "max_age": 25,
+            "occupation": ["बेरोजगार युवा", "बेरोजगार", "unemployed", "छात्र"],
+            "education": ["12th Pass", "स्नातक (Graduate)", "स्नातक", "12वीं"]
+        },
+        "required_documents": [
+            "आधार कार्ड (Aadhaar Card)",
+            "बिहार निवास प्रमाण पत्र (Bihar Residential Certificate)",
+            "12वीं या स्नातक उत्तीर्ण अंकपत्र व प्रमाण पत्र",
+            "बैंक पासबुक (Bank Account linked with Aadhaar)",
+            "आय प्रमाण पत्र"
+        ],
+        "optional_documents": ["जाति प्रमाण पत्र"],
+        "application_steps": [
+            {"step": 1, "title": "MNSSBY पोर्टल पर पंजीकरण", "desc": "www.7nishchay-yuvaupmission.bihar.gov.in पर जाएं और न्यू एप्लीकेंट रजिस्ट्रेशन करें।"},
+            {"step": 2, "title": "ऑनलाइन फॉर्म भरें", "desc": "व्यक्तिगत विवरण, शैक्षणिक योग्यता और बैंक खाता विवरण दर्ज करें।"},
+            {"step": 3, "title": "DRCC पर सत्यापन (Verification)", "desc": "फॉर्म सबमिट करने के बाद जिला निबंधन एवं परामर्श केंद्र (DRCC) जाकर मूल कागजातों का सत्यापन कराएं।"},
+            {"step": 4, "title": "मासिक भत्ता अंतरण", "desc": "सत्यापन उपरांत ₹1,000 की राशि प्रतिमाह DBT के माध्यम से बैंक खाते में भेजी जाती है।"}
+        ],
+        "official_website": "https://www.7nishchay-yuvaupmission.bihar.gov.in/",
+        "official_application_url": "https://www.7nishchay-yuvaupmission.bihar.gov.in/",
+        "official_source": "योजना एवं विकास विभाग, बिहार सरकार",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 48. Bihar Mukhyamantri Udyami Yojana (MUKY)
+    {
+        "id": "scheme_bihar_udyami",
+        "scheme_name": "Bihar Mukhyamantri Udyami Yojana (MUKY)",
+        "scheme_name_hindi": "बिहार मुख्यमंत्री उद्यमी योजना (युवा/महिला स्वरोजगार)",
+        "category": "business",
+        "category_hindi": "स्वरोजगार एवं उद्योग",
+        "description": "Financial assistance of up to Rs 10 lakh to start a new micro enterprise or manufacturing unit in Bihar: 50% (up to Rs 5 lakh) as grant/subsidy and 50% as interest-free loan (or 1% simple interest for general youth).",
+        "description_hindi": "बिहार में नया उद्योग या सूक्ष्म व्यवसाय शुरू करने के लिए ₹10 लाख तक की वित्तीय सहायता: ₹5,00,000 तक 50% सीधा सरकारी अनुदान (माफ) और ₹5,00,000 ब्याजमुक्त या 1% आसान किस्तों में ऋण।",
+        "department": "Department of Industries, Government of Bihar",
+        "department_hindi": "उद्योग विभाग, बिहार सरकार",
+        "ministry": "Government of Bihar",
+        "ministry_hindi": "उद्योग विभाग, बिहार सरकार",
+        "central_or_state": "state",
+        "applicable_states": ["Bihar", "बिहार"],
+        "beneficiary_tags": ["entrepreneur", "youth", "graduate", "business", "self-employed"],
+        "benefits": {
+            "annual_total": 500000,
+            "description_hindi": "₹10 लाख तक की परियोजना लागत: ₹5 लाख सरकारी सब्सिडी (मुफ्त अनुदान) + ₹5 लाख आसान ऋण (84 किस्तों में)",
+            "description_en": "Project cost up to Rs 10 Lakh: Rs 5 Lakh subsidy/grant + Rs 5 Lakh interest-free loan"
+        },
+        "eligibility_conditions": {
+            "states": ["Bihar", "बिहार"],
+            "min_age": 18,
+            "max_age": 50,
+            "education": ["10th Pass", "12th Pass", "ITI", "Polytechnic", "स्नातक (Graduate)", "स्नातक"]
+        },
+        "required_documents": [
+            "आधार कार्ड",
+            "बिहार स्थायी निवास प्रमाण पत्र",
+            "मैट्रिक/इंटरमीडिएट/स्नातक अंकपत्र",
+            "पैन कार्ड (PAN Card)",
+            "करंट बैंक खाता या सेविंग बैंक पासबुक",
+            "प्रोजेक्ट कार्ययोजना (DPR)"
+        ],
+        "optional_documents": ["जाति प्रमाण पत्र", "जीएसटी रजिस्ट्रेशन"],
+        "application_steps": [
+            {"step": 1, "title": "उद्यमी पोर्टल पर रजिस्ट्रेशन", "desc": "udyami.bihar.gov.in पर जाकर मुख्यमंत्री युवा उद्यमी योजना में ऑनलाइन आवेदन करें।"},
+            {"step": 2, "title": "उद्योग चयन व DPR अपलोड", "desc": "स्वीकृत 100+ निर्माण/सेवा उद्योगों में से अपना उद्योग चुनें और प्रोजेक्ट विवरण भरें।"},
+            {"step": 3, "title": "लॉटरी एवं चयन", "desc": "विभागीय चयन समिति द्वारा कंप्यूटर आधारित चयन उपरांत 2 सप्ताह का निःशुल्क प्रशिक्षण।"},
+            {"step": 4, "title": "किस्त भुगतान", "desc": "प्रशिक्षण पश्चात 3 किस्तों में ₹10 लाख की राशि (सब्सिडी + ऋण) जारी की जाती है।"}
+        ],
+        "official_website": "https://udyami.bihar.gov.in/",
+        "official_application_url": "https://udyami.bihar.gov.in/",
+        "official_source": "उद्योग विभाग, बिहार सरकार",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 49. Bihar Student Credit Card Scheme (BSCCS)
+    {
+        "id": "scheme_bihar_student_credit_card",
+        "scheme_name": "Bihar Student Credit Card Scheme (BSCCS)",
+        "scheme_name_hindi": "बिहार राज्य स्टूडेंट क्रेडिट कार्ड योजना",
+        "category": "education",
+        "category_hindi": "उच्च शिक्षा एवं विद्यार्थी कल्याण",
+        "description": "Education loan of up to Rs 4 Lakh with state government guarantee for students of Bihar pursuing graduation, engineering, medical, management, or professional degrees, with repayment starting 1 year after course completion.",
+        "description_hindi": "बिहार के 12वीं पास विद्यार्थियों को स्नातक, इंजीनियरिंग, मेडिकल, डिप्लोमा व उच्च शिक्षा के लिए राज्य सरकार की गारंटी पर ₹4,00,000 तक का रियायती शिक्षा ऋण। पढ़ाई पूरी होने के 1 वर्ष बाद आसान किस्तों में वापसी।",
+        "department": "Bihar State Higher Education Mission, Department of Education",
+        "department_hindi": "शिक्षा विभाग, बिहार सरकार",
+        "ministry": "Government of Bihar",
+        "ministry_hindi": "शिक्षा विभाग, बिहार सरकार",
+        "central_or_state": "state",
+        "applicable_states": ["Bihar", "बिहार"],
+        "beneficiary_tags": ["student", "youth", "higher_education"],
+        "benefits": {
+            "annual_total": 400000,
+            "description_hindi": "₹4,00,000 तक शिक्षा ऋण बिना किसी गिरवी या मॉर्गेज के, केवल 1% साधारण ब्याज (महिला/दिव्यांग) या 4% (अन्य)",
+            "description_en": "Education loan up to Rs 4 lakh with zero collateral at 1% interest for women/divyang, 4% for others"
+        },
+        "eligibility_conditions": {
+            "states": ["Bihar", "बिहार"],
+            "min_age": 17,
+            "max_age": 25,
+            "education": ["12th Pass", "स्नातक (Graduate)", "12वीं"]
+        },
+        "required_documents": [
+            "आधार कार्ड (छात्र व माता-पिता)",
+            "बिहार आवासीय प्रमाण पत्र",
+            "10वीं और 12वीं की मार्कशीट",
+            "उच्च शिक्षण संस्थान में नामांकन प्रमाण पत्र / ऑफर लेटर",
+            "संस्थान के फीस का विवरण"
+        ],
+        "optional_documents": ["आय प्रमाण पत्र"],
+        "application_steps": [
+            {"step": 1, "title": "पोर्टल पर रजिस्ट्रेशन", "desc": "7nishchay-yuvaupmission.bihar.gov.in पर पंजीकरण करें।"},
+            {"step": 2, "title": "कॉलेज व फीस विवरण अपलोड करें", "desc": "संस्थान से प्राप्त नामांकन रसीद व फीस स्ट्रक्चर अपलोड करें।"},
+            {"step": 3, "title": "DRCC पर दस्तावेज सत्यापन", "desc": "दस्तावेजों की मूल प्रतियों के साथ DRCC केंद्र पर उपस्थित हों।"},
+            {"step": 4, "title": "ऋण स्वीकृति व फीस ट्रांसफर", "desc": "शिक्षा वित्त निगम द्वारा कॉलेज के खाते में सीधे सेमेस्टर फीस का भुगतान।"}
+        ],
+        "official_website": "https://www.7nishchay-yuvaupmission.bihar.gov.in/",
+        "official_application_url": "https://www.7nishchay-yuvaupmission.bihar.gov.in/",
+        "official_source": "शिक्षा विभाग, बिहार सरकार",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
+    },
+    # 50. Kushal Yuva Program (KYP Bihar)
+    {
+        "id": "scheme_bihar_kushal_yuva",
+        "scheme_name": "Kushal Yuva Program (KYP Bihar)",
+        "scheme_name_hindi": "कुशल युवा कार्यक्रम (KYP बिहार कौशल विकास)",
+        "category": "skills",
+        "category_hindi": "कौशल विकास एवं रोजगार",
+        "description": "240 hours of free certified training in Basic Computer Skills (BS-CIT), English and Hindi Communication Skills (BS-CCS), and Soft Skills (BS-CSS) for youth aged 15-28 in Bihar.",
+        "description_hindi": "बिहार के 15 से 28 वर्ष के युवाओं के लिए 240 घंटे का निःशुल्क प्रमाणित प्रशिक्षण: कंप्यूटर ज्ञान (BS-CIT), अंग्रेजी/हिंदी संवाद कौशल (BS-CCS) और व्यावहारिक सॉफ्ट स्किल्स।",
+        "department": "Bihar Skill Development Mission (BSDM), Department of Labour Resources",
+        "department_hindi": "श्रम संसाधन विभाग, बिहार सरकार",
+        "ministry": "Government of Bihar",
+        "ministry_hindi": "बिहार कौशल विकास मिशन",
+        "central_or_state": "state",
+        "applicable_states": ["Bihar", "बिहार"],
+        "beneficiary_tags": ["skills", "youth", "training", "computer"],
+        "benefits": {
+            "annual_total": 5000,
+            "description_hindi": "240 घंटे का पूर्णतः निःशुल्क प्रमाणित कंप्यूटर व संचार प्रशिक्षण और रोजगार मार्गदर्शन",
+            "description_en": "240 hours of free certified IT and soft skills training with employment guidance"
+        },
+        "eligibility_conditions": {
+            "states": ["Bihar", "बिहार"],
+            "min_age": 15,
+            "max_age": 28,
+            "education": ["10th Pass", "12th Pass", "स्नातक (Graduate)", "10वीं", "12वीं"]
+        },
+        "required_documents": [
+            "आधार कार्ड",
+            "बिहार निवास प्रमाण पत्र",
+            "10वीं/12वीं/स्नातक अंकपत्र",
+            "बैंक पासबुक"
+        ],
+        "optional_documents": ["जाति प्रमाण पत्र"],
+        "application_steps": [
+            {"step": 1, "title": "ऑनलाइन रजिस्ट्रेशन", "desc": "skillmissionbihar.org पर नजदीकी ब्लॉक स्किल सेंटर (BSD) चुनें।"},
+            {"step": 2, "title": "DRCC सत्यापन", "desc": "अपने जिले के DRCC केंद्र पर दस्तावेजों का सत्यापन कराएं।"},
+            {"step": 3, "title": "3 माह का प्रशिक्षण", "desc": "ब्लॉक स्थित केंद्र पर प्रतिदिन 4 घंटे का आधुनिक कंप्यूटर लैब प्रशिक्षण लें।"},
+            {"step": 4, "title": "प्रमाणपत्र व जॉब फेयर", "desc": "परीक्षा उत्तीर्ण होने पर सरकारी प्रमाण पत्र और रोजगार मेले में भाग लेने का अवसर।"}
+        ],
+        "official_website": "https://skillmissionbihar.org/",
+        "official_application_url": "https://skillmissionbihar.org/",
+        "official_source": "बिहार कौशल विकास मिशन",
+        "last_verified_at": "2024-11-01",
+        "is_active": True
     }
 ]
 
@@ -1736,6 +2370,9 @@ USER_DOCS: Dict[str, Dict[str, str]] = {}
 USER_APPLICATIONS: Dict[str, List[Dict[str, Any]]] = {}
 USER_FAMILY_MEMBERS: Dict[str, List[Dict[str, Any]]] = {}
 USER_SCHEME_RESULTS: Dict[str, List[Dict[str, Any]]] = {}
+USER_SAVED_SCHEMES: Dict[str, set] = {}
+USER_CONVERSATIONS: Dict[str, List[Dict[str, Any]]] = {}
+CONVERSATION_MESSAGES: Dict[str, List[Dict[str, Any]]] = {}
 
 ACTIVE_USER_SESSIONS: Dict[str, Dict[str, Any]] = {}
 
@@ -1765,6 +2402,7 @@ def save_user_profile(user_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
     """
     Saves or updates profile for user_id.
     Ensures strict tenant isolation by user UUID.
+    Never overwrites with fake defaults.
     """
     if not user_id:
         raise ValueError("user_id is required")
@@ -1775,21 +2413,38 @@ def save_user_profile(user_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
             "id": user_id,
             "user_id": user_id,
             "name": updates.get("name", "नागरिक"),
+            "email": updates.get("email"),
+            "avatar_url": updates.get("avatar_url"),
             "age": updates.get("age"),
             "gender": updates.get("gender"),
             "marital_status": updates.get("marital_status"),
-            "state": updates.get("state", "उत्तर प्रदेश"),
+            "state": updates.get("state"),
             "district": updates.get("district"),
             "village_or_town": updates.get("village_or_town"),
+            "pincode": updates.get("pincode"),
             "occupation": updates.get("occupation"),
+            "employment_status": updates.get("employment_status"),
             "annual_income": updates.get("annual_income"),
+            "monthly_income": updates.get("monthly_income"),
             "family_size": updates.get("family_size", 1),
+            "owns_agricultural_land": updates.get("owns_agricultural_land", False),
             "has_bank_account": updates.get("has_bank_account", True),
-            "landholding": updates.get("landholding", 0.0),
+            "landholding": updates.get("landholding"),
+            "is_bpl": updates.get("is_bpl", False),
             "caste_category": updates.get("caste_category"),
-            "is_student": updates.get("is_student", False),
             "has_disability": updates.get("has_disability", False),
-            "is_onboarded": True,
+            "disability_percentage": updates.get("disability_percentage"),
+            "education_level": updates.get("education_level"),
+            "education_status": updates.get("education_status"),
+            "course_or_degree": updates.get("course_or_degree"),
+            "institution_type": updates.get("institution_type"),
+            "academic_marks": updates.get("academic_marks"),
+            "has_aadhaar": updates.get("has_aadhaar", False),
+            "has_income_certificate": updates.get("has_income_certificate", False),
+            "has_domicile_certificate": updates.get("has_domicile_certificate", False),
+            "has_ration_card": updates.get("has_ration_card", False),
+            "is_student": updates.get("is_student", False),
+            "is_onboarded": updates.get("is_onboarded", True),
             "current_benefits": updates.get("current_benefits", []),
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat()
@@ -1798,13 +2453,243 @@ def save_user_profile(user_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
         for k, v in updates.items():
             if v is not None:
                 existing[k] = v
-        existing["is_onboarded"] = True
+        if "is_onboarded" not in updates:
+            existing["is_onboarded"] = True
         existing["updated_at"] = datetime.now().isoformat()
 
     USER_PROFILES[user_id] = existing
     existing["members"] = USER_FAMILY_MEMBERS.get(user_id, [])
     existing["family_size"] = max(1, len(existing["members"]))
     return existing
+
+
+# =====================================================================
+# USER-SPECIFIC SAVED SCHEMES (Isolated per auth.uid())
+# =====================================================================
+
+def get_user_saved_schemes(user_id: Optional[str]) -> List[Dict[str, Any]]:
+    """
+    Returns list of schemes saved by the authenticated user.
+    For a new user, always returns empty list [].
+    Never returns demo schemes.
+    """
+    if not user_id:
+        return []
+    saved_ids = USER_SAVED_SCHEMES.get(user_id, set())
+    if not saved_ids:
+        return []
+    saved_list = []
+    for sid in saved_ids:
+        scheme = get_scheme_by_id(sid)
+        if scheme:
+            item = copy.deepcopy(scheme)
+            item["saved_at"] = datetime.now().isoformat()
+            saved_list.append(item)
+    return saved_list
+
+
+def get_user_saved_scheme_ids(user_id: Optional[str]) -> List[str]:
+    """Returns list of scheme IDs saved by the user."""
+    if not user_id:
+        return []
+    return list(USER_SAVED_SCHEMES.get(user_id, set()))
+
+
+def save_user_scheme(user_id: str, scheme_id: str) -> bool:
+    """
+    Saves a scheme to the user's personal saved list.
+    Associates the record with auth user_id.
+    """
+    if not user_id or not scheme_id:
+        return False
+    # Validate scheme exists in catalog
+    if not get_scheme_by_id(scheme_id):
+        return False
+    if user_id not in USER_SAVED_SCHEMES:
+        USER_SAVED_SCHEMES[user_id] = set()
+    USER_SAVED_SCHEMES[user_id].add(scheme_id)
+    return True
+
+
+def remove_user_saved_scheme(user_id: str, scheme_id: str) -> bool:
+    """
+    Removes a scheme from the user's personal saved list.
+    Does NOT delete the government scheme from the public catalog.
+    """
+    if not user_id or not scheme_id:
+        return False
+    if user_id in USER_SAVED_SCHEMES and scheme_id in USER_SAVED_SCHEMES[user_id]:
+        USER_SAVED_SCHEMES[user_id].remove(scheme_id)
+        return True
+    return False
+
+
+def is_scheme_saved(user_id: Optional[str], scheme_id: str) -> bool:
+    """Checks whether a scheme is saved by the given user."""
+    if not user_id or not scheme_id:
+        return False
+    return scheme_id in USER_SAVED_SCHEMES.get(user_id, set())
+
+
+# =====================================================================
+# PERMANENT CONVERSATION & MESSAGE STORAGE (Supabase / In-Memory Isolated)
+# =====================================================================
+
+def get_user_conversations(user_id: Optional[str]) -> List[Dict[str, Any]]:
+    """
+    Returns list of conversations belonging ONLY to user_id.
+    Sorted by updated_at descending.
+    Returns empty list for new users.
+    """
+    if not user_id:
+        return []
+    convs = USER_CONVERSATIONS.get(user_id, [])
+    # Sort by updated_at desc
+    sorted_convs = sorted(convs, key=lambda c: c.get("updated_at", ""), reverse=True)
+    # Enrich with message count and last message
+    result = []
+    for c in sorted_convs:
+        cid = c["id"]
+        msgs = CONVERSATION_MESSAGES.get(cid, [])
+        item = {
+            "id": cid,
+            "user_id": user_id,
+            "title": c.get("title", "नया संवाद"),
+            "created_at": c.get("created_at", datetime.now().isoformat()),
+            "updated_at": c.get("updated_at", datetime.now().isoformat()),
+            "message_count": len(msgs),
+            "last_message": msgs[-1]["content"] if msgs else None
+        }
+        result.append(item)
+    return result
+
+
+def create_conversation(user_id: str, title: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Creates a new persistent conversation for user_id.
+    """
+    if not user_id:
+        raise ValueError("user_id is required")
+
+    cid = str(uuid.uuid4())
+    now = datetime.now().isoformat()
+    record = {
+        "id": cid,
+        "user_id": user_id,
+        "title": title or "नया संवाद",
+        "created_at": now,
+        "updated_at": now
+    }
+    if user_id not in USER_CONVERSATIONS:
+        USER_CONVERSATIONS[user_id] = []
+    USER_CONVERSATIONS[user_id].insert(0, record)
+    CONVERSATION_MESSAGES[cid] = []
+    return {
+        **record,
+        "message_count": 0,
+        "last_message": None,
+        "messages": []
+    }
+
+
+def get_conversation(user_id: str, conversation_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Retrieves a conversation and all its messages.
+    Enforces that conversation belongs to user_id.
+    """
+    if not user_id or not conversation_id:
+        return None
+    convs = USER_CONVERSATIONS.get(user_id, [])
+    conv = next((c for c in convs if c["id"] == conversation_id), None)
+    if not conv:
+        return None
+    msgs = CONVERSATION_MESSAGES.get(conversation_id, [])
+    return {
+        "id": conv["id"],
+        "user_id": user_id,
+        "title": conv.get("title", "नया संवाद"),
+        "created_at": conv.get("created_at"),
+        "updated_at": conv.get("updated_at"),
+        "message_count": len(msgs),
+        "messages": msgs
+    }
+
+
+def add_conversation_message(
+    user_id: str,
+    conversation_id: str,
+    role: str,
+    content: str,
+    metadata: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """
+    Adds a message to a conversation.
+    Updates the conversation's updated_at timestamp.
+    Auto-titles the conversation if it's the first user message.
+    """
+    if not user_id or not conversation_id:
+        raise ValueError("user_id and conversation_id are required")
+
+    convs = USER_CONVERSATIONS.get(user_id, [])
+    conv = next((c for c in convs if c["id"] == conversation_id), None)
+    if not conv:
+        # Create conversation on the fly if not exists
+        conv = create_conversation(user_id, title="नया संवाद")
+        conversation_id = conv["id"]
+
+    now = datetime.now().isoformat()
+    msg = {
+        "id": str(uuid.uuid4()),
+        "conversation_id": conversation_id,
+        "user_id": user_id,
+        "role": role,
+        "content": content,
+        "metadata": metadata or {},
+        "created_at": now
+    }
+
+    if conversation_id not in CONVERSATION_MESSAGES:
+        CONVERSATION_MESSAGES[conversation_id] = []
+    CONVERSATION_MESSAGES[conversation_id].append(msg)
+
+    # Auto-title conversation on first user message if title is default
+    if role == "user" and (conv.get("title") in ["नया संवाद", "New Chat", ""] or conv.get("title") is None):
+        clean_text = content.strip().replace("\n", " ")
+        if len(clean_text) > 40:
+            conv["title"] = clean_text[:38] + "..."
+        elif len(clean_text) > 0:
+            conv["title"] = clean_text
+
+    conv["updated_at"] = now
+    return msg
+
+
+def delete_conversation(user_id: str, conversation_id: str) -> bool:
+    """
+    Deletes a conversation and all its messages.
+    """
+    if not user_id or not conversation_id:
+        return False
+    convs = USER_CONVERSATIONS.get(user_id, [])
+    original_len = len(convs)
+    USER_CONVERSATIONS[user_id] = [c for c in convs if c["id"] != conversation_id]
+    CONVERSATION_MESSAGES.pop(conversation_id, None)
+    return len(USER_CONVERSATIONS[user_id]) < original_len
+
+
+def rename_conversation(user_id: str, conversation_id: str, title: str) -> bool:
+    """
+    Renames a conversation.
+    """
+    if not user_id or not conversation_id or not title:
+        return False
+    convs = USER_CONVERSATIONS.get(user_id, [])
+    conv = next((c for c in convs if c["id"] == conversation_id), None)
+    if not conv:
+        return False
+    conv["title"] = title.strip()
+    conv["updated_at"] = datetime.now().isoformat()
+    return True
 
 
 def get_user_family_members(user_id: str) -> List[Dict[str, Any]]:
@@ -1917,6 +2802,11 @@ def delete_user_account_data(user_id: str) -> bool:
     USER_DOCS.pop(user_id, None)
     USER_APPLICATIONS.pop(user_id, None)
     USER_SCHEME_RESULTS.pop(user_id, None)
+    USER_SAVED_SCHEMES.pop(user_id, None)
+    # Clean up conversations and messages
+    user_convs = USER_CONVERSATIONS.pop(user_id, [])
+    for c in user_convs:
+        CONVERSATION_MESSAGES.pop(c.get("id"), None)
     return True
 
 
@@ -1930,7 +2820,7 @@ def create_empty_profile(session_id: Optional[str] = None) -> Dict[str, Any]:
         "age": None,
         "gender": None,
         "marital_status": None,
-        "state": "उत्तर प्रदेश",
+        "state": None,
         "district": None,
         "village_or_town": None,
         "area_type": "rural",
@@ -1971,6 +2861,90 @@ def update_session_profile(session_id: str, updates: Dict[str, Any]) -> Dict[str
     return prof
 
 
+def replace_session_profile(session_id: str, new_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Completely resets session profile to empty and populates only with new_data, preventing persona contamination."""
+    clean = create_empty_profile(session_id)
+    for k, v in new_data.items():
+        if v is not None:
+            clean[k] = v
+    ACTIVE_USER_SESSIONS[session_id] = clean
+    return clean
+
+
+def replace_user_profile(user_id: str, new_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Completely resets a user profile and populates only with new_data, preventing persona contamination."""
+    clean = {
+        "id": user_id,
+        "user_id": user_id,
+        "name": new_data.get("name", "नागरिक"),
+        "email": None,
+        "avatar_url": None,
+        "age": new_data.get("age"),
+        "gender": new_data.get("gender"),
+        "marital_status": new_data.get("marital_status"),
+        "state": new_data.get("state"),
+        "district": new_data.get("district"),
+        "village_or_town": new_data.get("village_or_town"),
+        "pincode": new_data.get("pincode"),
+        "occupation": new_data.get("occupation"),
+        "employment_status": new_data.get("employment_status"),
+        "annual_income": new_data.get("annual_income"),
+        "monthly_income": new_data.get("monthly_income"),
+        "family_size": new_data.get("family_size", 1),
+        "owns_agricultural_land": new_data.get("owns_agricultural_land", False),
+        "has_bank_account": new_data.get("has_bank_account", True),
+        "landholding": new_data.get("landholding"),
+        "is_bpl": new_data.get("is_bpl", False),
+        "caste_category": new_data.get("caste_category"),
+        "has_disability": new_data.get("has_disability", False),
+        "disability_percentage": new_data.get("disability_percentage"),
+        "education_level": new_data.get("education"),
+        "education_status": new_data.get("education_status"),
+        "course_or_degree": new_data.get("course_or_degree"),
+        "institution_type": new_data.get("institution_type"),
+        "academic_marks": new_data.get("academic_marks"),
+        "has_aadhaar": new_data.get("has_aadhaar", False),
+        "has_income_certificate": new_data.get("has_income_certificate", False),
+        "has_domicile_certificate": new_data.get("has_domicile_certificate", False),
+        "has_ration_card": new_data.get("has_ration_card", False),
+        "is_student": new_data.get("is_student", False),
+        "is_onboarded": True,
+        "current_benefits": new_data.get("current_benefits", []),
+        "members": new_data.get("members", [])
+    }
+    USER_PROFILES[user_id] = clean
+    return clean
+
+
+def replace_demo_profile(new_data: Dict[str, Any]) -> Dict[str, Any]:
+    global DB_PROFILE
+    clean = {
+        "id": "profile-current-user",
+        "name": new_data.get("name", "नागरिक"),
+        "age": new_data.get("age"),
+        "gender": new_data.get("gender"),
+        "marital_status": new_data.get("marital_status"),
+        "state": new_data.get("state"),
+        "district": new_data.get("district"),
+        "village_or_town": new_data.get("village_or_town"),
+        "area_type": new_data.get("area_type", "rural"),
+        "occupation": new_data.get("occupation"),
+        "annual_income": new_data.get("annual_income"),
+        "monthly_income": new_data.get("monthly_income"),
+        "family_size": new_data.get("family_size", 1),
+        "has_bank_account": True,
+        "landholding": new_data.get("landholding"),
+        "caste_category": new_data.get("caste_category"),
+        "is_student": new_data.get("is_student", False),
+        "has_disability": new_data.get("has_disability", False),
+        "is_onboarded": False,
+        "current_benefits": new_data.get("current_benefits", []),
+        "members": new_data.get("members", [])
+    }
+    DB_PROFILE = clean
+    return clean
+
+
 def get_current_profile() -> Dict[str, Any]:
     return DB_PROFILE
 
@@ -2006,14 +2980,94 @@ def remove_family_member(member_id: str) -> bool:
 
 
 def get_all_schemes() -> List[Dict[str, Any]]:
-    return DB_SCHEMES
+    from app.services.scheme_registry import enrich_scheme_with_verified_data
+    return [enrich_scheme_with_verified_data(s) for s in DB_SCHEMES]
 
 
 def get_scheme_by_id(scheme_id: str) -> Optional[Dict[str, Any]]:
+    from app.services.scheme_registry import enrich_scheme_with_verified_data
     for s in DB_SCHEMES:
         if s["id"] == scheme_id:
-            return s
+            return enrich_scheme_with_verified_data(s)
     return None
+
+
+SYNC_AUDIT_LOGS: List[Dict[str, Any]] = [
+    {
+        "id": "log_init_001",
+        "timestamp": "2024-11-01T10:00:00Z",
+        "source": "verified_gazette_and_myscheme",
+        "status": "success",
+        "schemes_checked": 37,
+        "schemes_synced": 37,
+        "schemes_added": 37,
+        "notes": "Verified 37 central and state schemes from official government gazettes, myScheme.gov.in, and UP departmental portals.",
+    }
+]
+
+
+def add_scheme(scheme_data: Dict[str, Any]) -> Dict[str, Any]:
+    global DB_SCHEMES
+    from app.services.scheme_registry import enrich_scheme_with_verified_data
+    if not scheme_data.get("id"):
+        slug = (scheme_data.get("scheme_name") or "scheme").lower().replace(" ", "_")[:30]
+        scheme_data["id"] = f"scheme_{slug}_{int(datetime.now().timestamp()) % 100000}"
+
+    # Check if duplicate exists
+    for idx, s in enumerate(DB_SCHEMES):
+        if s["id"] == scheme_data["id"]:
+            updated = update_scheme(scheme_data["id"], scheme_data)
+            return updated or scheme_data
+
+    scheme_data["created_at"] = datetime.now().isoformat()
+    scheme_data["last_verified_at"] = datetime.now().strftime("%Y-%m-%d")
+    enriched = enrich_scheme_with_verified_data(scheme_data)
+    DB_SCHEMES.append(enriched)
+    return enriched
+
+
+def update_scheme(scheme_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    global DB_SCHEMES
+    from app.services.scheme_registry import enrich_scheme_with_verified_data
+    for idx, s in enumerate(DB_SCHEMES):
+        if s["id"] == scheme_id:
+            updated = dict(s)
+            for k, v in updates.items():
+                if v is not None:
+                    updated[k] = v
+            updated["updated_at"] = datetime.now().isoformat()
+            updated["last_verified_at"] = datetime.now().strftime("%Y-%m-%d")
+            enriched = enrich_scheme_with_verified_data(updated)
+            DB_SCHEMES[idx] = enriched
+            return enriched
+    return None
+
+
+def delete_scheme(scheme_id: str) -> bool:
+    global DB_SCHEMES
+    original_len = len(DB_SCHEMES)
+    DB_SCHEMES = [s for s in DB_SCHEMES if s["id"] != scheme_id]
+    return len(DB_SCHEMES) < original_len
+
+
+def mark_scheme_verified(scheme_id: str, verifier: str = "Admin") -> Optional[Dict[str, Any]]:
+    return update_scheme(scheme_id, {
+        "data_verification_status": "verified",
+        "last_verified_at": datetime.now().strftime("%Y-%m-%d")
+    })
+
+
+def get_sync_audit_logs() -> List[Dict[str, Any]]:
+    return list(reversed(SYNC_AUDIT_LOGS))
+
+
+def add_sync_audit_log(entry: Dict[str, Any]) -> Dict[str, Any]:
+    if not entry.get("id"):
+        entry["id"] = f"log_{int(datetime.now().timestamp() * 1000)}"
+    if not entry.get("timestamp"):
+        entry["timestamp"] = datetime.now().isoformat()
+    SYNC_AUDIT_LOGS.append(entry)
+    return entry
 
 
 # Optional Supabase Integration Helpers

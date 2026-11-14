@@ -200,6 +200,12 @@ export function ScreenAnalysis({ onNavigate, language = "hi", extraData }: Scree
               });
             }
 
+            if (data.report?.profile && typeof window !== "undefined") {
+              try {
+                sessionStorage.setItem("sarkari_saathi_active_profile", JSON.stringify(data.report.profile));
+              } catch (_) {}
+            }
+
             addLog("अनुसंधान पूर्ण! आपकी रिपोर्ट सफलतापूर्वक तैयार हो गई है।", "सफल");
             es.close();
           } catch (err) {
@@ -479,7 +485,7 @@ export function ScreenAnalysis({ onNavigate, language = "hi", extraData }: Scree
 
             {/* Direct Navigation Button to Scheme Screen */}
             <button
-              onClick={() => onNavigate("schemes", { analysisReport: finalReport })}
+              onClick={() => onNavigate("schemes", { analysisReport: finalReport, profile: finalReport?.profile })}
               className="w-full py-3 bg-[#0645A8] hover:bg-[#1671E8] dark:bg-[#1671E8] dark:hover:bg-[#0645A8] text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-md"
             >
               <Sparkles className="w-4 h-4 text-yellow-300" />
